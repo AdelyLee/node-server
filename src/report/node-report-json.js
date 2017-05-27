@@ -5,7 +5,7 @@ var http = require('http');
 var builder = require('./BriefingBuilder.js');
 var service = require('./decisionReport.js');
 var fs = require('fs');
-var node_echarts = require('../charts/index.js');
+var node_charts = require('../charts/index.js');
 
 exports.getBriefingJson = function (file) {
     // get the default briefing json data
@@ -46,7 +46,7 @@ function mikeBriefingCell(briefingCellObj) {
         // according to the option create the image
         // if the chart type is not keywordsCloud use echarts to draw chart
         if (briefingCellObj.chartType != 'keywordsCloud') {
-            node_echarts({
+            node_charts.renderEcharts({
                 path: __dirname + '/images/' + briefingCellObj.chartId + '.png',
                 option: JSON.parse(briefingCellObj.option),
                 width: 800,
@@ -56,7 +56,16 @@ function mikeBriefingCell(briefingCellObj) {
             // get the image switch to base64
             var file = __dirname + '/images/' + briefingCellObj.chartId + '.png';
             briefingCellObj.imageUrl = base64_encode(file);
+        } else {
+            // node_charts.renderKeywordsCloud({
+            //     path: __dirname + '/images/' + briefingCellObj.chartId + '.png',
+            //     option: JSON.parse(briefingCellObj.option),
+            //     width: 800,
+            //     height: 500
+            // });
         }
+
+
     }
     var briefingCellChildren = briefingCellObj.children;
     var briefingCells = [];
