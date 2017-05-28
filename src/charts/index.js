@@ -2,14 +2,16 @@
  * Created by lyc on 17-5-19.
  */
 var echarts = require("echarts");
-var d3 = require('d3');
-var d3LayoutCloud = require("d3.layout.cloud");
+var d3 = require("d3");
+var d3LayoutCloud = require("d3-cloud");
 var Canvas = require("canvas");
 var fs = require('fs');
 var path = require('path');
 var MapChartUtil = require("./mapChartUtil");
-var jsdom = require('jsdom');
 
+// 引用d3-node后台生成png图片
+const D3Node = require('d3-node');
+const output = require('d3node-output');
 /**
  * @param config = {
         width: 图表宽度
@@ -74,16 +76,21 @@ const chart = {
     },
 
     renderKeywordsCloud: function (config) {
-        var data = config.option.data;
         var height = config.height || 400;
         var width = config.width || 400;
+        const markup = '<div id="container"><div id="chart"></div></div>';
+        var options = {selector: '#chart', container: markup};
+        var d3n = new D3Node(options);
+
+        var data = config.option.data;
         var fill = d3.scale.category20();
         var scale = d3.scale.linear().domain(
             [0, data[0].score / 3, data[0].score]).range([10, 20, 50]);
-        var document = jsdom.jsdom();
 
+        // 调用d3LayoutCloud必须传递canvas，主要是后台生成图片d3-cloud中document未定义
         var layout = d3LayoutCloud()
             .size([width, height])
+            .canvas(d3n.createCanvas())
             .words(data.map(function (d) {
                 return {
                     text: d.keyword,
@@ -98,9 +105,9 @@ const chart = {
         layout.start();
 
         function draw(words) {
-            var svg = d3.select(document.body).append("svg")
-                .attr("width", '100%')
-                .attr("height", '100%')
+            var height = config.height || 400;
+            var width = config.width || 400;
+            d3n.createSVG(width, height)
                 .style("border-radius", width + "px")
                 .append("g")
                 .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
@@ -120,23 +127,8 @@ const chart = {
                     return d.text;
                 });
 
-            // svgToPng(svg, 400, 400)
-        }
-
-        //svg 保存成Png  fuction
-        function svgToPng(svg, pngWidth, pngHeight) {
-            var serializer = new XMLSerializer();
-            var source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(svg.node());
-            var image = new Image;
-            image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
-            var canvas = document.createElement("canvas");
-            canvas.width = pngWidth;
-            canvas.height = pngHeight;
-            var context = canvas.getContext("2d");
-            context.fillStyle = '#fff';//设置保存后的PNG 是白色的
-            context.fillRect(0, 0, 10000, 10000);
-            context.drawImage(image, 0, 0);
-            return canvas.toDataURL("image/png");
+            // 生成png图片
+            output(config.path, d3n);
         }
     }
 };

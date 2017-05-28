@@ -57,12 +57,12 @@ function mikeBriefingCell(briefingCellObj) {
             var file = __dirname + '/images/' + briefingCellObj.chartId + '.png';
             briefingCellObj.imageUrl = base64_encode(file);
         } else {
-            // node_charts.renderKeywordsCloud({
-            //     path: __dirname + '/images/' + briefingCellObj.chartId + '.png',
-            //     option: JSON.parse(briefingCellObj.option),
-            //     width: 800,
-            //     height: 500
-            // });
+            node_charts.renderKeywordsCloud({
+                path: __dirname + '/images/' + briefingCellObj.chartId,
+                option: JSON.parse(briefingCellObj.option),
+                width: 400,
+                height: 400
+            });
         }
 
 
