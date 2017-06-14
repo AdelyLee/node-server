@@ -1,6 +1,7 @@
 {
-    "type": "MONTHLY",
+    "type": "BASE_MONTHLY",
     "title": "安全生产與情月报",
+    "subTitle": "报告子标题",
     "author": "人事司(宣教办)、通信信息中心编制",
     "createTime": "2017年5月",
     "issue": "2017年第5期",
@@ -30,7 +31,7 @@
             "method": "getAccidentAreaChart"
         },{
             "level": "level-two",
-            "title": "(一) 5月安全生产與情趋势",
+            "title": "(一) 安全生产與情趋势",
             "imageUrl": "",
             "option": {},
             "children": [],
@@ -40,7 +41,7 @@
             "method": "getArticleTrendChart"
         },{
             "level": "level-two",
-            "title": "(二) 5月安全生产新闻传播舆论热度",
+            "title": "(二) 安全生产新闻传播舆论热度",
             "imageUrl": "",
             "option": {},
             "children": [],
@@ -50,7 +51,7 @@
             "method": "getArticleHotPointChart"
         },{
             "level": "level-two",
-            "title": "(三) 5月安全生产热点新闻解析",
+            "title": "(三) 安全生产热点新闻解析",
             "imageUrl": "",
             "children": [],
             "method": ""

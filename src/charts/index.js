@@ -6,6 +6,7 @@ var d3 = require("d3");
 var d3LayoutCloud = require("d3-cloud");
 var Canvas = require("canvas");
 var fs = require('fs');
+var svg2png = require('svg2png');
 var path = require('path');
 var MapChartUtil = require("./mapChartUtil");
 
@@ -82,6 +83,9 @@ const chart = {
         var options = {selector: '#chart', container: markup};
         var d3n = new D3Node(options);
 
+        if (config.option.data.length == 0){
+            return;
+        }
         var data = config.option.data;
         var fill = d3.scale.category20();
         var scale = d3.scale.linear().domain(
@@ -128,7 +132,16 @@ const chart = {
                 });
 
             // 生成png图片
-            output(config.path, d3n);
+            try {
+                //　使用同步方法生成图片　svg2png.sync
+                var svgBuffer = new Buffer(d3n.svgString(), 'utf-8');
+                var outputBuffer = svg2png.sync(svgBuffer);
+                fs.writeFileSync(config.path, outputBuffer);
+                console.log("Create Img:" + config.path)
+            } catch (err) {
+                console.error("Error: Write File failed" + err.message)
+            }
+
         }
     }
 };
