@@ -11,6 +11,7 @@ var builder = require('./BriefingBuilder.js');
 var monthlyReportService = require('./monthlyReport.js');
 var specialReportService = require('./specialReport.js');
 var node_charts = require('../charts/index.js');
+var headers = require('../headerUtil');
 
 
 var service = monthlyReportService;
@@ -33,9 +34,7 @@ exports.getBriefingJson = function () {
         url: urlPath,
         method: "get",
         json: true,
-        headers: {
-            "content-type": "application/json",
-        }
+        headers: headers.getRequestHeader()
     }, function (error, response, data) {
         if (!error && response.statusCode == 200) {
             console.log('http request return!');

@@ -9,7 +9,7 @@ var url = require('./common.js');
 var utils = require('./utils.js');
 var dateUtil = require('../DateUtil.js');
 var descriptionUtil = require('./descriptionUtil.js');
-
+var headers = require('../headerUtil');
 
 const actions = {
     // 月报标题
@@ -63,9 +63,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getArticleTypeChart http request return!');
@@ -154,9 +152,7 @@ const actions = {
             url: urlPath,
             method: "post",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            },
+            headers: headers.getRequestHeader(),
             body: param
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
@@ -272,9 +268,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getArticleTrendChart http request return!');
@@ -441,9 +435,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getArticleHotPointChart http request return!');
@@ -561,9 +553,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getNewsEmotionPieChart http request return!');
@@ -682,9 +672,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getMediaBarChart http request return!');
@@ -791,9 +779,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getArticleHotKeywordsChart http request return!');
@@ -847,9 +833,7 @@ const actions = {
             url: urlPath,
             method: "post",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            },
+            headers: headers.getRequestHeader(),
             body: param
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
@@ -977,9 +961,7 @@ const actions = {
             url: urlPath,
             method: "post",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            },
+            headers: headers.getRequestHeader(),
             body: param
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
@@ -1079,9 +1061,7 @@ const actions = {
             url: urlPath,
             method: "post",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            },
+            headers: headers.getRequestHeader(),
             body: param
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
@@ -1166,9 +1146,7 @@ const actions = {
             url: urlPath,
             method: "post",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            },
+            headers: headers.getRequestHeader(),
             body: param
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
@@ -1284,9 +1262,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getCommentHotKeywordsChart http request return!');

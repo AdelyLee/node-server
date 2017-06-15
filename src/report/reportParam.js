@@ -5,6 +5,7 @@ var url = require('./common.js');
 var dateUtil = require('../DateUtil.js');
 var request = require('request');
 var deasync = require('deasync');
+var headers = require('../headerUtil');
 
 var action = {
     getReportParam: function (req) {
@@ -31,9 +32,7 @@ var action = {
                 url: urlPath,
                 method: "get",
                 json: true,
-                headers: {
-                    "content-type": "application/json",
-                }
+                headers: headers.getRequestHeader()
             }, function (error, response, data) {
                 if (!error && response.statusCode == 200) {
                     console.log('http request return!');
@@ -56,9 +55,7 @@ var action = {
                 url: urlPath,
                 method: "get",
                 json: true,
-                headers: {
-                    "content-type": "application/json",
-                }
+                headers: headers.getRequestHeader()
             }, function (error, response, data) {
                 if (!error && response.statusCode == 200) {
                     console.log('http request return!');

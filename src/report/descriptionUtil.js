@@ -4,8 +4,8 @@
 var request = require('request');
 var querystring = require('querystring');
 var deasync = require('deasync');
-
 var url = require('./common.js');
+var headers = require('../headerUtil');
 
 const actions = {
     getProvinceLocality: function (provinces) {
@@ -19,9 +19,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getProvinceLocality http request return!');
@@ -52,9 +50,7 @@ const actions = {
             url: urlPath,
             method: "post",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            },
+            headers: headers.getRequestHeader(),
             body: param
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
@@ -86,9 +82,7 @@ const actions = {
             url: urlPath,
             method: "post",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            },
+            headers: headers.getRequestHeader(),
             body: param
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
@@ -124,9 +118,7 @@ const actions = {
             url: urlPath,
             method: "get",
             json: true,
-            headers: {
-                "content-type": "application/json",
-            }
+            headers: headers.getRequestHeader()
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getHotArticle http request return!');
