@@ -84,6 +84,12 @@ const chart = {
         var d3n = new D3Node(options);
 
         if (config.option.data.length == 0){
+            debugger;
+            // var projectPath = process.cwd();
+            // var filename = projectPath + "/data/" + "svg.svg";
+            // var svgBuffer = fs.readFileSync(filename);
+            // var outputBuffer = svg2png.sync(svgBuffer, { width: 400, height: 400 });
+            fs.writeFileSync(config.path, "");
             return;
         }
         var data = config.option.data;

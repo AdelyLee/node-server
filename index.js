@@ -18,6 +18,7 @@ app.all('*', function(req, res, next) {
 //  http://localhost:8081/briefingJson?reportType=MONTHLY&startTime=1483200000000&endTime=1493654399000
 app.get('/briefingJson', function (req, res) {
 	// 将参数设置为全局变量
+	debugger;
 	global.reportParam = action.getReportParam(req);
 	var briefingJson = report.getBriefingJson();
 

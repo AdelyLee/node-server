@@ -277,7 +277,8 @@ const actions = {
             mustNotWord: report.mustNotWord,
             shouldWord: report.shouldWord,
             s_date: report.startDate,
-            e_date: report.endDate
+            e_date: report.endDate,
+            articleType: 'article'
         };
         var urlPath = url.webserviceUrl + '/es/filterAndGroupByTime.json?' + querystring.stringify(param);
         request({
@@ -290,26 +291,29 @@ const actions = {
                 console.log('getArticleTrendChart http request return!');
                 isReturn = true;
 
+                data = data.article;
                 var total = 0, seriesData = [], xAxisData = [], indexOfMax = 0, maxDate = "", indexOfMin = 0, minDate = "", legendData = [];
                 if (report.type == "SPECIAL") {
                     legendData.push("與情数目");
-                    for (var item of data) {
-                        var itemDate = dateUtil.parseDate(item.key);
-                        var itemDateStr = dateUtil.formatDate(itemDate, 'yyyy-MM-dd');
-                        xAxisData.push(itemDateStr);
-                        seriesData.push(item.value);
+                    if (data.length > 0) {
+                        for (var item of data) {
+                            var itemDate = dateUtil.parseDate(item.key);
+                            var itemDateStr = dateUtil.formatDate(itemDate, 'yyyy-MM-dd');
+                            xAxisData.push(itemDateStr);
+                            seriesData.push(item.value);
+                        }
+
+                        // 获取数据的最高点和最地点
+                        indexOfMax = seriesData.indexOf(Math.max.apply(Math, seriesData));
+                        maxDate = xAxisData[indexOfMax];
+                        indexOfMin = seriesData.indexOf(Math.min.apply(Math, seriesData));
+                        minDate = xAxisData[indexOfMin];
+
+                        // 获取所有数据总数
+                        seriesData.forEach(function (value) {
+                            total += value;
+                        });
                     }
-
-                    // 获取数据的最高点和最地点
-                    indexOfMax = seriesData.indexOf(Math.max.apply(Math, seriesData));
-                    maxDate = xAxisData[indexOfMax];
-                    indexOfMin = seriesData.indexOf(Math.min.apply(Math, seriesData));
-                    minDate = xAxisData[indexOfMin];
-
-                    // 获取所有数据总数
-                    seriesData.forEach(function (value) {
-                        total += value;
-                    });
                 }
 
                 var option = {
@@ -356,22 +360,24 @@ const actions = {
                     ]
                 };
 
-                var hotStartDate = dateUtil.formatDate(dateUtil.parseDate(maxDate), 'yyyy-MM-dd');
-                var hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
-                var heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
-                var heightStr = "";
-                if (heightData.key){
-                    heightStr = '<span class="describe-redText">' + maxDate + '</span>日，<span class="describe-redText">＂' + heightData.key
-                        + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本月的舆情高峰。';
+                var description = '';
+                if (data.length > 0) {
+                    var hotStartDate = dateUtil.formatDate(dateUtil.parseDate(maxDate), 'yyyy-MM-dd');
+                    var hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
+                    var heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
+                    var heightStr = "";
+                    if (heightData.key) {
+                        heightStr = '<span class="describe-redText">' + maxDate + '</span>日，<span class="describe-redText">＂' + heightData.key
+                            + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本月的舆情高峰。';
+                    }
+
+                    // make ArticleTypeChart description
+                    description = '<div class="describe-text">根据最新舆情分析, 共抓取互联网数据'
+                        + '<span class="describe-redText">' + total + '</span>条，其中<span class="describe-redText">' + maxDate
+                        + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData[indexOfMax] + '</span>条。'
+                        + heightStr + '<span class="describe-redText">' + minDate
+                        + '</span>日最低，共有数据<span class="describe-redText">' + seriesData[indexOfMin] + '</span>条。</div>';
                 }
-
-                // make ArticleTypeChart description
-                var description = '<div class="describe-text">根据最新舆情分析, 共抓取互联网数据'
-                    + '<span class="describe-redText">' + total + '</span>条，其中<span class="describe-redText">' + maxDate
-                    + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData[indexOfMax] + '</span>条。'
-                    + heightStr + '<span class="describe-redText">' + minDate
-                    + '</span>日最低，共有数据<span class="describe-redText">' + seriesData[indexOfMin] + '</span>条。</div>';
-
                 renderData.option = option;
                 renderData.description = description;
             } else {

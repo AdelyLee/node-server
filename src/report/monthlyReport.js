@@ -285,21 +285,24 @@ const actions = {
                     legendData.push(endDateStr);
 
                     var lastMonthNum = [], monthNum = [];
-                    for (var item of data) {
-                        var itemDate = dateUtil.parseDate(item.key);
-                        var itemDateStr = dateUtil.formatDate(itemDate, 'yyyy-MM');
-                        if (itemDateStr == dateUtil.formatDate(startDate, 'yyyy-MM')) {
-                            xAxisData_a.push(itemDate.getDate());
-                            seriesData_a.push(item.value);
+                    if (data.length > 0) {
+                        for (var item of data) {
+                            var itemDate = dateUtil.parseDate(item.key);
+                            var itemDateStr = dateUtil.formatDate(itemDate, 'yyyy-MM');
+                            if (itemDateStr == dateUtil.formatDate(startDate, 'yyyy-MM')) {
+                                xAxisData_a.push(itemDate.getDate());
+                                seriesData_a.push(item.value);
 
-                            lastMonthNum.push(item);
-                        } else if (itemDateStr == dateUtil.formatDate(startTempDate, 'yyyy-MM')) {
-                            xAxisData_b.push(itemDate.getDate());
-                            seriesData_b.push(item.value);
+                                lastMonthNum.push(item);
+                            } else if (itemDateStr == dateUtil.formatDate(startTempDate, 'yyyy-MM')) {
+                                xAxisData_b.push(itemDate.getDate());
+                                seriesData_b.push(item.value);
 
-                            monthNum.push(item);
+                                monthNum.push(item);
+                            }
                         }
                     }
+
                     // 以天数长的月份作为横轴坐标
                     if (xAxisData_a.length > xAxisData_b.length) {
                         xAxisData = xAxisData_a;
@@ -775,6 +778,7 @@ const actions = {
         };
 
         var urlPath = url.webserviceUrl + '/es/hotWords.json?' + querystring.stringify(param);
+        console.log("getArticleHotKeywordsChart", urlPath);
         request({
             url: urlPath,
             method: "get",
@@ -1080,7 +1084,12 @@ const actions = {
                 seriesData.sort(function (a, b) {
                     return b.value - a.value
                 });
-                maxCount = seriesData[0].value == undefined ? 10 : seriesData[0].value;
+                if (seriesData.length > 0) {
+                    maxCount = seriesData[0].value == undefined ? 10 : seriesData[0].value;
+                } else {
+                    maxCount = 10;
+                }
+
                 var option = {
                     tooltip: {
                         trigger: 'item',
@@ -1156,48 +1165,50 @@ const actions = {
                 // 拼装 chart option
                 var seriesItems = [], legendData = [];
                 // 条数最多的占圆环的 80% 环的宽度为20
-                var maxItemValue = parseInt(data[0].value / 0.8);
-                data.forEach(function (item, i) {
-                    var seriesItem = {
-                        name: '相关品论分析',
-                        type: 'pie',
-                        clockWise: false,
-                        radius: [160 - 20 * i, 180 - 20 * i],
-                        itemStyle: {
-                            normal: {
-                                label: {show: false},
-                                labelLine: {show: false},
-                                shadowBlur: 40,
-                                shadowColor: 'rgba(40, 40, 40, 0.5)',
-                            }
-                        },
-                        hoverAnimation: false,
-                        data: [
-                            {
-                                value: item.value,
-                                name: item.key
+                if (data.length > 0) {
+                    var maxItemValue = parseInt(data[0].value / 0.8);
+                    data.forEach(function (item, i) {
+                        var seriesItem = {
+                            name: '相关品论分析',
+                            type: 'pie',
+                            clockWise: false,
+                            radius: [160 - 20 * i, 180 - 20 * i],
+                            itemStyle: {
+                                normal: {
+                                    label: {show: false},
+                                    labelLine: {show: false},
+                                    shadowBlur: 40,
+                                    shadowColor: 'rgba(40, 40, 40, 0.5)',
+                                }
                             },
-                            {
-                                value: maxItemValue - item.value,
-                                name: 'invisible',
-                                itemStyle: {
-                                    normal: {
-                                        color: 'rgba(0,0,0,0)',
-                                        label: {show: false},
-                                        labelLine: {show: false}
-                                    },
-                                    emphasis: {
-                                        color: 'rgba(0,0,0,0)'
+                            hoverAnimation: false,
+                            data: [
+                                {
+                                    value: item.value,
+                                    name: item.key
+                                },
+                                {
+                                    value: maxItemValue - item.value,
+                                    name: 'invisible',
+                                    itemStyle: {
+                                        normal: {
+                                            color: 'rgba(0,0,0,0)',
+                                            label: {show: false},
+                                            labelLine: {show: false}
+                                        },
+                                        emphasis: {
+                                            color: 'rgba(0,0,0,0)'
+                                        }
                                     }
                                 }
-                            }
-                        ]
-                    };
-                    if (i < 5) {
-                        seriesItems.push(seriesItem);
-                        legendData.push(item.key);
-                    }
-                });
+                            ]
+                        };
+                        if (i < 5) {
+                            seriesItems.push(seriesItem);
+                            legendData.push(item.key);
+                        }
+                    });
+                }
 
                 var option = {
                     color: ['#85b6b2', '#6d4f8d', '#cd5e7e', '#e38980', '#f7db88'],
@@ -1258,6 +1269,7 @@ const actions = {
         };
 
         var urlPath = url.webserviceUrl + '/es/hotWords.json?' + querystring.stringify(param);
+        console.log("getCommentHotKeywordsChart", urlPath);
         request({
             url: urlPath,
             method: "get",
