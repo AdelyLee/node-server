@@ -16,6 +16,7 @@ app.all('*', function(req, res, next) {
 
 // 测试url http://localhost:8081/briefingJson?id=1&reportType=SPECIAL
 //  http://localhost:8081/briefingJson?reportType=MONTHLY&startTime=1483200000000&endTime=1493654399000
+
 app.get('/briefingJson', function (req, res) {
 	// 将参数设置为全局变量
 	global.reportParam = action.getReportParam(req);
@@ -60,7 +61,7 @@ app.get('/briefingJson.json', function (req, res) {
 	});
 });
 
-var server = app.listen(8081, function () {
+var server = app.listen(8881, function () {
 	var host = server.address().address
 	var port = server.address().port
 
