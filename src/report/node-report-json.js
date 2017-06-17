@@ -41,7 +41,9 @@ exports.getBriefingJson = function () {
             isReturn = true;
 
             var briefingData = data[0];
-            delete briefingData._id;
+            if (briefingData._id) {
+                delete briefingData._id;
+            }
             var briefingObj = briefingData;
             // 处理数据
             briefingObj = mikeBriefing(briefingObj);
