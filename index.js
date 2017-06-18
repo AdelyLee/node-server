@@ -19,7 +19,6 @@ app.all('*', function(req, res, next) {
 
 app.get('/briefingJson', function (req, res) {
 	// 将参数设置为全局变量
-	debugger;
 	global.reportParam = action.getReportParam(req);
 	var briefingJson = report.getBriefingJson();
 
