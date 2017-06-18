@@ -4,6 +4,7 @@
 import webpack from 'webpack';
 import path from 'path';
 import fs from 'fs';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 
 var nodeModules = {};
 fs.readdirSync('node_modules')
@@ -20,7 +21,7 @@ export default {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js',
-        publicPath: "/"
+        publicPath: "/static/"
 
     },
     target: 'node',
@@ -40,7 +41,15 @@ export default {
         }]
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.HotModuleReplacementPlugin(),
+        // copy custom static assets
+        new CopyWebpackPlugin([
+            {
+                from: path.resolve(__dirname, './static'),
+                to: 'static',
+                ignore: ['.*']
+            }
+        ])
     ],
     resolve: {
         modules: [
