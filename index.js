@@ -19,7 +19,6 @@ app.all('*', function(req, res, next) {
 
 app.get('/briefingJson', function (req, res) {
 	// 将参数设置为全局变量
-	debugger;
 	global.reportParam = action.getReportParam(req);
 	var briefingJson = report.getBriefingJson();
 
@@ -62,7 +61,7 @@ app.get('/briefingJson.json', function (req, res) {
 	});
 });
 
-var server = app.listen(8881, function () {
+var server = app.listen(8081, function () {
 	var host = server.address().address
 	var port = server.address().port
 
