@@ -89,7 +89,7 @@ const chart = {
             // var filename = projectPath + "/data/" + "svg.svg";
             // var svgBuffer = fs.readFileSync(filename);
             // var outputBuffer = svg2png.sync(svgBuffer, { width: 400, height: 400 });
-            fs.writeFileSync(config.path, "");
+            // fs.writeFileSync(config.path, "");/
             return;
         }
         var data = config.option.data;
