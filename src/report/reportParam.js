@@ -50,7 +50,7 @@ var action = {
             });
         } else {
             // 获取基础关键词
-            var urlPath = url.webserviceUrl + '/keywords/findByUser/';
+            var urlPath = url.webserviceUrl + '/keywords/findByType/?type=BASIC';
             request({
                 url: urlPath,
                 method: "get",

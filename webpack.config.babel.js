@@ -38,7 +38,14 @@ export default {
             exclude: [
                 path.resolve(__dirname, "node_modules"),
             ]
-        }]
+        }, {
+            test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+            loader: 'url-loader',
+            options: {
+                limit: 10000,
+                name: path.resolve('images/[name].[hash:7].[ext]')
+            }
+        },]
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
@@ -47,6 +54,11 @@ export default {
             {
                 from: path.resolve(__dirname, './static'),
                 to: 'static',
+                ignore: ['.*']
+            },
+            {
+                from: path.resolve(__dirname, './src/images'),
+                to: 'images',
                 ignore: ['.*']
             }
         ])

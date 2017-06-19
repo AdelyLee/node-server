@@ -33,6 +33,7 @@ exports.getBriefingJson = function () {
     var briefing = {}, isReturn = false;
     // get the default briefing json data
     var urlPath = url.webserviceUrl + '/briefing/detail/type?type=' + baseReportType;
+    console.log("get base report url", urlPath);
     request({
         url: urlPath,
         method: "get",

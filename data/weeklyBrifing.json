@@ -31,17 +31,7 @@
             "method": "getAccidentAreaChart"
         },{
             "level": "level-two",
-            "title": "(一) 安全生产與情趋势",
-            "imageUrl": "",
-            "option": {},
-            "children": [],
-            "description": "",
-            "chartType": "line",
-            "chartId": "article-trend-chart",
-            "method": "getArticleTrendChart"
-        },{
-            "level": "level-two",
-            "title": "(二) 安全生产新闻传播舆论热度",
+            "title": "(一) 安全生产新闻传播舆论热度",
             "imageUrl": "",
             "option": {},
             "children": [],
@@ -51,7 +41,7 @@
             "method": "getArticleHotPointChart"
         },{
             "level": "level-two",
-            "title": "(三) 安全生产热点新闻解析",
+            "title": "(二) 安全生产热点新闻解析",
             "imageUrl": "",
             "children": [],
             "method": ""

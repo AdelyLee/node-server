@@ -16,6 +16,7 @@ app.all('*', function(req, res, next) {
 
 // 测试url http://localhost:8081/briefingJson?id=1&reportType=SPECIAL
 //  http://localhost:8081/briefingJson?reportType=MONTHLY&startTime=1483200000000&endTime=1493654399000
+//  http://localhost:8081/briefingJson?reportType=WEEKLY&startTime=1497196800000&endTime=1497801599000
 
 app.get('/briefingJson', function (req, res) {
 	// 将参数设置为全局变量

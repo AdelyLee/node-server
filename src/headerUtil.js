@@ -32,8 +32,6 @@ var action = {
                 renderData.token = data.token;
             } else {
                 isReturn = true;
-                console.log("login error data", data);
-                console.log("login error response", response);
                 console.log("login error", error);
             }
         });

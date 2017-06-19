@@ -77,6 +77,8 @@ const actions = {
             monthNum: monthNum
         };
 
+        console.log("getTrendOfOpinion lastMonthNum", lastMonthNum);
+        console.log("getTrendOfOpinion monthNum", monthNum);
         var urlPath = url.webserviceUrl + '/description/trendOfOpinion';
         request({
             url: urlPath,
