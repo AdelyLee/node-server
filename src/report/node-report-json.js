@@ -25,6 +25,9 @@ exports.getBriefingJson = function () {
     } else if (param.type === "SPECIAL") {
         service = specialReportService;
         baseReportType = "BASE_SPECIAL";
+    } else if (param.type === "WEEKLY") {
+        service = monthlyReportService;
+        baseReportType = "BASE_WEEKLY";
     }
 
     var briefing = {}, isReturn = false;
@@ -56,6 +59,8 @@ exports.getBriefingJson = function () {
                 briefing.type = "MONTHLY";
             } else if (param.type === "SPECIAL") {
                 briefing.type = "SPECIAL";
+            } else if (param.type === "WEEKLY") {
+                briefing.type = "WEEKLY";
             }
 
             // 获取报告 title, outline, summary, author, createTime, issue 信息．
