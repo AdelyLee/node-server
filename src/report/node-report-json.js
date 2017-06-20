@@ -12,7 +12,7 @@ var builder = require('./BriefingBuilder.js');
 var monthlyReportService = require('./monthlyReport.js');
 var specialReportService = require('./specialReport.js');
 var node_charts = require('../charts/index.js');
-var Canvas = require("../../node-canvas");
+var Canvas = require("canvas");
 var headers = require('../headerUtil');
 
 
@@ -110,7 +110,7 @@ function mikeBriefingCell(briefingCellObj) {
 
         // set font
         var projectPath = process.cwd();
-        Canvas.registerFont(path.join(projectPath + '/static/font', "msyh.ttf"), { family: "微软雅黑"});
+        // Canvas.registerFont(path.join(projectPath + '/static/font', "msyh.ttf"), { family: "微软雅黑"});
         var file = projectPath + "/static/images/" + briefingCellObj.chartId + '.png';
         if (briefingCellObj.chartType && briefingCellObj.chartType != '' && briefingCellObj.chartType != 'keywordsCloud') {
             node_charts.renderEcharts({

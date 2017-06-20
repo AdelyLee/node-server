@@ -4,7 +4,7 @@
 var echarts = require("echarts");
 var d3 = require("d3");
 var d3LayoutCloud = require("d3-cloud");
-var Canvas = require("../../node-canvas");
+var Canvas = require("canvas");
 var fs = require('fs');
 var svg2png = require('svg2png');
 var path = require('path');
@@ -126,7 +126,7 @@ const chart = {
                 .append("text")
                 .style("font-size", function (d) {
                     return d.size + "px";
-                }).style("font-family", "黑体")
+                }).style("font-family", "微软雅黑")
                 .style("fill", function (d, i) {
                     return fill(i);
                 }).attr("text-anchor", "middle")
