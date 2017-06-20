@@ -3,6 +3,7 @@
  */
 var http = require('http');
 var fs = require('fs');
+var path = require('path');
 var request = require('request');
 var deasync = require('deasync');
 
@@ -11,6 +12,7 @@ var builder = require('./BriefingBuilder.js');
 var monthlyReportService = require('./monthlyReport.js');
 var specialReportService = require('./specialReport.js');
 var node_charts = require('../charts/index.js');
+var Canvas = require("../../node-canvas");
 var headers = require('../headerUtil');
 
 
@@ -105,17 +107,23 @@ function mikeBriefingCell(briefingCellObj) {
         briefingCellObj.description = renderData.description;
         // according to the option create the image
         // if the chart type is not keywordsCloud use echarts to draw chart
-        var file = __dirname + '/images/' + briefingCellObj.chartId + '.png';
+
+        // set font
+        var projectPath = process.cwd();
+        Canvas.registerFont(path.join(projectPath + '/static/font', "msyh.ttf"), { family: "微软雅黑"});
+        var file = projectPath + "/static/images/" + briefingCellObj.chartId + '.png';
         if (briefingCellObj.chartType && briefingCellObj.chartType != '' && briefingCellObj.chartType != 'keywordsCloud') {
             node_charts.renderEcharts({
-                path: __dirname + '/images/' + briefingCellObj.chartId + '.png',
+                canvas: Canvas,
+                font: '14px 微软雅黑',
+                path: projectPath + '/static/images/' + briefingCellObj.chartId + '.png',
                 option: briefingCellObj.option,
                 width: 800,
                 height: 500
             });
         } else if (briefingCellObj.chartType == 'keywordsCloud') {
             node_charts.renderKeywordsCloud({
-                path: __dirname + '/images/' + briefingCellObj.chartId + '.png',
+                path: projectPath + '/static/images/' + briefingCellObj.chartId + '.png',
                 option: briefingCellObj.option,
                 width: 400,
                 height: 400

@@ -55,11 +55,6 @@ export default {
                 from: path.resolve(__dirname, './static'),
                 to: 'static',
                 ignore: ['.*']
-            },
-            {
-                from: path.resolve(__dirname, './src/images'),
-                to: 'images',
-                ignore: ['.*']
             }
         ])
     ],

@@ -4,7 +4,7 @@
 var echarts = require("echarts");
 var d3 = require("d3");
 var d3LayoutCloud = require("d3-cloud");
-var Canvas = require("canvas");
+var Canvas = require("../../node-canvas");
 var fs = require('fs');
 var svg2png = require('svg2png');
 var path = require('path');
@@ -84,12 +84,11 @@ const chart = {
         var d3n = new D3Node(options);
 
         if (config.option.data.length == 0){
-            debugger;
-            // var projectPath = process.cwd();
-            // var filename = projectPath + "/data/" + "svg.svg";
-            // var svgBuffer = fs.readFileSync(filename);
-            // var outputBuffer = svg2png.sync(svgBuffer, { width: 400, height: 400 });
-            // fs.writeFileSync(config.path, "");/
+            var projectPath = process.cwd();
+            var filename = projectPath + "/static/images/default.svg";
+            var svgBuffer = fs.readFileSync(filename);
+            var outputBuffer = svg2png.sync(svgBuffer, { width: 400, height: 400 });
+            fs.writeFileSync(config.path, outputBuffer);
             return;
         }
         var data = config.option.data;
