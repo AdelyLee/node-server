@@ -106,16 +106,6 @@
           "chartType": "keywordsCloud",
           "chartId": "comment-keywords-chart",
           "method": "getCommentHotKeywordsChart"
-        },
-        {
-          "level": "level-three",
-          "title": "网民主要观点分布",
-          "imageUrl": "",
-          "description": "",
-          "children": [],
-          "chartType": "pie",
-          "chartId": "comment-pie-chart",
-          "method": "getCommentPieChart"
         }
       ]
     }

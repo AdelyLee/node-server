@@ -825,120 +825,120 @@ const actions = {
     },
 
     // 本月事故情况
-    getMonthAccidentChart: function (report) {
-        var renderData = {}, isReturn = false;
-        var param = {
-            startDate: report.startDate,
-            endDate: report.endDate
-        };
-
-        var urlPath = url.webserviceUrl + '/accidentYuqing/hotAccident';
-        request({
-            url: urlPath,
-            method: "post",
-            json: true,
-            headers: headers.getRequestHeader(),
-            body: param
-        }, function (error, response, data) {
-            if (!error && response.statusCode == 200) {
-                console.log('getMonthAccidentChart http request return!');
-                isReturn = true;
-
-                // 拼装 chart option
-                if (data.length > 6) {
-                    data = data.slice(0, 6);
-                }
-                data = data.sort(function (a, b) {
-                    return a.value - b.value;
-                });
-
-                var seriesData = [];
-                var yAxisData = [];
-                for (var item of data) {
-                    var node = {};
-                    node.name = item.key;
-                    node.value = item.value;
-                    if (item.key.length > 18) {
-                        node.key = item.key.substring(0, 18) + '...';
-                    }
-                    seriesData.push(node);
-                    yAxisData.push(node.key);
-                }
-                var option = {
-                    yAxis: {
-                        type: 'category',
-                        data: yAxisData,
-                        axisLabel: {
-                            textStyle: {
-                                fontWeight: 700,
-                                fontSize: 18
-                            }
-                        }
-                    },
-                    grid: {
-                        left: '10',
-                        right: '30',
-                        bottom: '10',
-                        top: '10',
-                        containLabel: true
-                    },
-                    xAxis: {
-                        type: 'value',
-                        axisLabel: {
-                            textStyle: {
-                                fontWeight: 700,
-                                fontSize: 18
-                            }
-                        }
-                    },
-                    series: [
-                        {
-                            name: '舆论热点',
-                            type: 'bar',
-                            data: seriesData,
-                            barMaxWidth: 45,
-                            itemStyle: {
-                                normal: {
-                                    color: function (params) {
-                                        // build a color map as your need.
-                                        var colorList = [
-                                            '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
-                                            '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
-                                            '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
-                                        ];
-                                        return colorList[params.dataIndex % 15]
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                };
-
-                // make description
-                var dataMonth = parseInt(param.startDate.split("-")[1]);
-                var itemStr = "";
-                data = data.reverse();
-                data.forEach(function (item, i) {
-                    if (i < 3) {
-                        itemStr += '<span class="describe-redText">“' + item.key + '” (' + item.value + ')</span>、';
-                    }
-                });
-                itemStr = itemStr.substring(0, itemStr.length - 1);
-                var description = '<div class="describe-text">' + dataMonth + '月份媒体报道情况，事故與情报道主要话题集中在'
-                    + itemStr + '等几个事故。</div>';
-                renderData.option = option;
-                renderData.description = description;
-            } else {
-                console.log("get getMonthAccidentChart data error");
-            }
-        });
-
-        while (!isReturn) {
-            deasync.runLoopOnce();
-        }
-
-        return renderData;
-    },
+    // getMonthAccidentChart: function (report) {
+    //     var renderData = {}, isReturn = false;
+    //     var param = {
+    //         startDate: report.startDate,
+    //         endDate: report.endDate
+    //     };
+    //
+    //     var urlPath = url.webserviceUrl + '/accidentYuqing/hotAccident';
+    //     request({
+    //         url: urlPath,
+    //         method: "post",
+    //         json: true,
+    //         headers: headers.getRequestHeader(),
+    //         body: param
+    //     }, function (error, response, data) {
+    //         if (!error && response.statusCode == 200) {
+    //             console.log('getMonthAccidentChart http request return!');
+    //             isReturn = true;
+    //
+    //             // 拼装 chart option
+    //             if (data.length > 6) {
+    //                 data = data.slice(0, 6);
+    //             }
+    //             data = data.sort(function (a, b) {
+    //                 return a.value - b.value;
+    //             });
+    //
+    //             var seriesData = [];
+    //             var yAxisData = [];
+    //             for (var item of data) {
+    //                 var node = {};
+    //                 node.name = item.key;
+    //                 node.value = item.value;
+    //                 if (item.key.length > 18) {
+    //                     node.key = item.key.substring(0, 18) + '...';
+    //                 }
+    //                 seriesData.push(node);
+    //                 yAxisData.push(node.key);
+    //             }
+    //             var option = {
+    //                 yAxis: {
+    //                     type: 'category',
+    //                     data: yAxisData,
+    //                     axisLabel: {
+    //                         textStyle: {
+    //                             fontWeight: 700,
+    //                             fontSize: 18
+    //                         }
+    //                     }
+    //                 },
+    //                 grid: {
+    //                     left: '10',
+    //                     right: '30',
+    //                     bottom: '10',
+    //                     top: '10',
+    //                     containLabel: true
+    //                 },
+    //                 xAxis: {
+    //                     type: 'value',
+    //                     axisLabel: {
+    //                         textStyle: {
+    //                             fontWeight: 700,
+    //                             fontSize: 18
+    //                         }
+    //                     }
+    //                 },
+    //                 series: [
+    //                     {
+    //                         name: '舆论热点',
+    //                         type: 'bar',
+    //                         data: seriesData,
+    //                         barMaxWidth: 45,
+    //                         itemStyle: {
+    //                             normal: {
+    //                                 color: function (params) {
+    //                                     // build a color map as your need.
+    //                                     var colorList = [
+    //                                         '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
+    //                                         '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
+    //                                         '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
+    //                                     ];
+    //                                     return colorList[params.dataIndex % 15]
+    //                                 }
+    //                             }
+    //                         }
+    //                     }
+    //                 ]
+    //             };
+    //
+    //             // make description
+    //             var dataMonth = parseInt(param.startDate.split("-")[1]);
+    //             var itemStr = "";
+    //             data = data.reverse();
+    //             data.forEach(function (item, i) {
+    //                 if (i < 3) {
+    //                     itemStr += '<span class="describe-redText">“' + item.key + '” (' + item.value + ')</span>、';
+    //                 }
+    //             });
+    //             itemStr = itemStr.substring(0, itemStr.length - 1);
+    //             var description = '<div class="describe-text">' + dataMonth + '月份媒体报道情况，事故與情报道主要话题集中在'
+    //                 + itemStr + '等几个事故。</div>';
+    //             renderData.option = option;
+    //             renderData.description = description;
+    //         } else {
+    //             console.log("get getMonthAccidentChart data error");
+    //         }
+    //     });
+    //
+    //     while (!isReturn) {
+    //         deasync.runLoopOnce();
+    //     }
+    //
+    //     return renderData;
+    // },
 
     //事故类型饼图
     getAccidentTypeChart: function (report) {
@@ -1143,118 +1143,118 @@ const actions = {
     },
 
     //相关评论
-    getCommentPieChart: function (report) {
-        var renderData = {}, isReturn = false;
-        var param = {
-            startDate: report.startDate,
-            endDate: report.endDate
-        };
-
-        var urlPath = url.webserviceUrl + '/accidentYuqing/hotAccidentComment';
-        request({
-            url: urlPath,
-            method: "post",
-            json: true,
-            headers: headers.getRequestHeader(),
-            body: param
-        }, function (error, response, data) {
-            if (!error && response.statusCode == 200) {
-                console.log('getCommentPieChart http request return!');
-                isReturn = true;
-
-                // 拼装 chart option
-                var seriesItems = [], legendData = [];
-                // 条数最多的占圆环的 80% 环的宽度为20
-                if (data.length > 0) {
-                    var maxItemValue = parseInt(data[0].value / 0.8);
-                    data.forEach(function (item, i) {
-                        var seriesItem = {
-                            name: '相关品论分析',
-                            type: 'pie',
-                            clockWise: false,
-                            radius: [160 - 20 * i, 180 - 20 * i],
-                            itemStyle: {
-                                normal: {
-                                    label: {show: false},
-                                    labelLine: {show: false},
-                                    shadowBlur: 40,
-                                    shadowColor: 'rgba(40, 40, 40, 0.5)',
-                                }
-                            },
-                            hoverAnimation: false,
-                            data: [
-                                {
-                                    value: item.value,
-                                    name: item.key
-                                },
-                                {
-                                    value: maxItemValue - item.value,
-                                    name: 'invisible',
-                                    itemStyle: {
-                                        normal: {
-                                            color: 'rgba(0,0,0,0)',
-                                            label: {show: false},
-                                            labelLine: {show: false}
-                                        },
-                                        emphasis: {
-                                            color: 'rgba(0,0,0,0)'
-                                        }
-                                    }
-                                }
-                            ]
-                        };
-                        if (i < 5) {
-                            seriesItems.push(seriesItem);
-                            legendData.push(item.key);
-                        }
-                    });
-                }
-
-                var option = {
-                    color: ['#85b6b2', '#6d4f8d', '#cd5e7e', '#e38980', '#f7db88'],
-                    title: {
-                        text: "相关言论",
-                        left: "center",
-                        top: "center",
-                        textStyle: {
-                            fontSize: 20,
-                            fontWeight: 700
-                        }
-                    },
-                    tooltip: {
-                        show: true,
-                        formatter: "{a} <br/>{b} : {c}"
-                    },
-                    legend: {
-                        show: false,
-                        itemGap: 12,
-                        right: 'right',
-                        data: legendData
-                    },
-                    series: seriesItems
-                };
-
-                var itemStr = "";
-                data.forEach(function (item, i) {
-                    if (i < 3) {
-                        itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")</span>、";
-                    }
-                });
-                itemStr = itemStr.substring(0, itemStr.length - 1);
-                var description = "<div class='describe-text'>对互联网事故相关言论进行分析，网民关注一下几个方面：" + itemStr + "</div>";
-                renderData.option = option;
-                renderData.description = description;
-            } else {
-                console.log("get getCommentPieChart data error");
-            }
-        });
-
-        while (!isReturn) {
-            deasync.runLoopOnce();
-        }
-
-        return renderData;
-    },
+    // getCommentPieChart: function (report) {
+    //     var renderData = {}, isReturn = false;
+    //     var param = {
+    //         startDate: report.startDate,
+    //         endDate: report.endDate
+    //     };
+    //
+    //     var urlPath = url.webserviceUrl + '/accidentYuqing/hotAccidentComment';
+    //     request({
+    //         url: urlPath,
+    //         method: "post",
+    //         json: true,
+    //         headers: headers.getRequestHeader(),
+    //         body: param
+    //     }, function (error, response, data) {
+    //         if (!error && response.statusCode == 200) {
+    //             console.log('getCommentPieChart http request return!');
+    //             isReturn = true;
+    //
+    //             // 拼装 chart option
+    //             var seriesItems = [], legendData = [];
+    //             // 条数最多的占圆环的 80% 环的宽度为20
+    //             if (data.length > 0) {
+    //                 var maxItemValue = parseInt(data[0].value / 0.8);
+    //                 data.forEach(function (item, i) {
+    //                     var seriesItem = {
+    //                         name: '相关品论分析',
+    //                         type: 'pie',
+    //                         clockWise: false,
+    //                         radius: [160 - 20 * i, 180 - 20 * i],
+    //                         itemStyle: {
+    //                             normal: {
+    //                                 label: {show: false},
+    //                                 labelLine: {show: false},
+    //                                 shadowBlur: 40,
+    //                                 shadowColor: 'rgba(40, 40, 40, 0.5)',
+    //                             }
+    //                         },
+    //                         hoverAnimation: false,
+    //                         data: [
+    //                             {
+    //                                 value: item.value,
+    //                                 name: item.key
+    //                             },
+    //                             {
+    //                                 value: maxItemValue - item.value,
+    //                                 name: 'invisible',
+    //                                 itemStyle: {
+    //                                     normal: {
+    //                                         color: 'rgba(0,0,0,0)',
+    //                                         label: {show: false},
+    //                                         labelLine: {show: false}
+    //                                     },
+    //                                     emphasis: {
+    //                                         color: 'rgba(0,0,0,0)'
+    //                                     }
+    //                                 }
+    //                             }
+    //                         ]
+    //                     };
+    //                     if (i < 5) {
+    //                         seriesItems.push(seriesItem);
+    //                         legendData.push(item.key);
+    //                     }
+    //                 });
+    //             }
+    //
+    //             var option = {
+    //                 color: ['#85b6b2', '#6d4f8d', '#cd5e7e', '#e38980', '#f7db88'],
+    //                 title: {
+    //                     text: "相关言论",
+    //                     left: "center",
+    //                     top: "center",
+    //                     textStyle: {
+    //                         fontSize: 20,
+    //                         fontWeight: 700
+    //                     }
+    //                 },
+    //                 tooltip: {
+    //                     show: true,
+    //                     formatter: "{a} <br/>{b} : {c}"
+    //                 },
+    //                 legend: {
+    //                     show: false,
+    //                     itemGap: 12,
+    //                     right: 'right',
+    //                     data: legendData
+    //                 },
+    //                 series: seriesItems
+    //             };
+    //
+    //             var itemStr = "";
+    //             data.forEach(function (item, i) {
+    //                 if (i < 3) {
+    //                     itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")</span>、";
+    //                 }
+    //             });
+    //             itemStr = itemStr.substring(0, itemStr.length - 1);
+    //             var description = "<div class='describe-text'>对互联网事故相关言论进行分析，网民关注一下几个方面：" + itemStr + "</div>";
+    //             renderData.option = option;
+    //             renderData.description = description;
+    //         } else {
+    //             console.log("get getCommentPieChart data error");
+    //         }
+    //     });
+    //
+    //     while (!isReturn) {
+    //         deasync.runLoopOnce();
+    //     }
+    //
+    //     return renderData;
+    // },
 
     // 相关品论关键词云
     getCommentHotKeywordsChart: function (report) {

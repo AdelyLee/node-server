@@ -63,6 +63,9 @@ export default {
             "node_modules",
             path.resolve(__dirname, "app")
         ],
-        extensions: ['.js', '.json']
+        extensions: ['.js', '.json',],
+        // alias: {
+        //     canvas: path.join(__dirname, "node-canvas"),
+        // },
     }
 }

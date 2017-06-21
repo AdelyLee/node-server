@@ -80,17 +80,7 @@
         "title": "二、安全生产事故聚焦",
         "children": [{
             "level": "level-two",
-            "title": "1. 本月事故情况",
-            "imageUrl": "",
-            "option": {},
-            "description": "",
-            "children": [],
-            "chartType": "bar",
-            "chartId": "month-accident-bar-chart",
-            "method": "getMonthAccidentChart"
-        },{
-            "level": "level-two",
-            "title": "2. 事故分析",
+            "title": "1. 事故分析",
             "imageUrl": "",
             "children": [{
                 "level": "level-three",
@@ -115,18 +105,9 @@
             }]
         },{
             "level": "level-two",
-            "title": "3. 相关言论分析",
+            "title": "2. 相关言论分析",
             "imageUrl": "",
             "children": [{
-                "level": "level-three",
-                "title": "事故相关言论占比分析",
-                "imageUrl": "",
-                "description": "",
-                "children": [],
-                "chartType": "pie",
-                "chartId": "comment-pie-chart",
-                "method": "getCommentPieChart"
-            },{
                 "level": "level-three",
                 "title": "事故相关言论关键词词云",
                 "imageUrl": "",

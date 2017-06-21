@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "lyc",
+  "author": "bjtopcom",
   "dependencies": {
     "canvas": "^1.6.5",
     "d3": "^3.5.5",
