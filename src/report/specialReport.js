@@ -67,17 +67,36 @@ const actions = {
 
     // 與情综述描述
     getSpecialSummarize: function (report) {
-        var renderData = {}, isReturn = false;
-        var param = {
-            mustWord: report.mustWord,
-            mustNotWord: report.mustNotWord,
-            shouldWord: report.shouldWord,
-            s_date: report.startDate,
-            e_date: report.endDate
-        };
+        var renderData = {}, isReturn = false, description = ""　;
         var option = {};
+        var urlPath = url.webserviceUrl + '/description/specialOutline/';
+        var param = {
+            "date": {
+                "startDate": report.startDate,
+                "endDate": report.endDate
+            },
+            "keyword": {
+                "mustWord": report.mustWord,
+                "shouldWord": report.shouldWord,
+                "mustNotWord": report.mustNotWord
+            }
+        };
+        request({
+            url: urlPath,
+            method: "post",
+            json: true,
+            headers: headers.getRequestHeader(),
+            body: param
+        }, function (error, response, data) {
+            if (!error && response.statusCode == 200) {
+                isReturn = true;
 
-        var description = "调查报告发布至今,共产生相关话题的报道3375篇,其中新闻媒体报道3362篇,成为本次话题最主要的舆论传播阵地";
+            }
+        });
+        while (!isReturn) {
+            deasync.runLoopOnce();
+        }
+
         renderData.description = description;
         renderData.option = option;
 
