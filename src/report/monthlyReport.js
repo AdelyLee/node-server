@@ -88,20 +88,25 @@ const actions = {
                 keywords = keywords.substring(0, keywords.length - 1);
 
                 var itemStr = "";
-                // if (data.maxSite.length > 0) {
-                //     data.maxSite.forEach(function (item, i) {
-                //         if (data.compare > 0) {
-                //             compareLastMonth = "增加" + data.compare[i].toFixed(2) + "％";
-                //         } else {
-                //             compareLastMonth = "减少" + data.mom.toFixed(2) + "％";
-                //         }
-                //         itemStr += utils.resetArticleTypeName(item.key) + item.value + '条,同比上月'
-                //     })
-                //
-                // }
+                if (data.maxSite.length > 0) {
+                    data.maxSite.forEach(function (item) {
+                        data.compare.forEach(function (obj) {
+                            if (item.key === obj.key) {
+                                if (obj.value > 0) {
+                                    compareLastMonth = "增加" + obj.value.toFixed(2) + "％";
+                                } else {
+                                    compareLastMonth = "减少" + obj.value.toFixed(2) + "％";
+                                }
+                                itemStr += utils.resetArticleTypeName(item.key)
+                                    + item.value + '条,同比上月' + compareLastMonth + "。";　
+                            }
+                        });
+                    })
+
+                }
 
                 outline = "本月共抓取数据<span class='describe-redText'>" + total + "</span>条，同比上月<span class='describe-redText'>" + compareLastMonth
-                    + "</span>，本月共抓取" + keywords + "相关" + "新闻１２１２条，同比增加２３%.";
+                    + "</span>，本月共抓取" + keywords + "相关" + itemStr;
             }
         });
         while (!isReturn) {

@@ -76,6 +76,7 @@ const actions = {
             e_date: report.endDate
         };
         var option = {};
+
         var description = "调查报告发布至今,共产生相关话题的报道3375篇,其中新闻媒体报道3362篇,成为本次话题最主要的舆论传播阵地";
         renderData.description = description;
         renderData.option = option;
