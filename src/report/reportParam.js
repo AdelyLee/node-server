@@ -35,7 +35,8 @@ var action = {
                 headers: headers.getRequestHeader()
             }, function (error, response, data) {
                 if (!error && response.statusCode == 200) {
-                    console.log('http request return!');
+                    console.log('getReportParam http request return!');
+                    debugger;
                     isReturn = true;
                     param = data;
                     param.type = reportType;

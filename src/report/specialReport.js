@@ -104,17 +104,18 @@ const actions = {
             if (!error && response.statusCode == 200) {
                 console.log('getArticleTypeChart http request return!');
                 isReturn = true;
-                // 拼装 chart option
-                var total = 0;
-                var seriesData = [];
-                for (var item of data) {
-                    total += item.value;
-                    var node = {};
-                    node.name = utils.resetArticleTypeName(item.key);
-                    node.value = item.value;
-                    seriesData.push(node);
-                }
 
+                var total = 0, seriesData = [], description = '';
+                // 拼装 chart option
+                if (data.length > 0) {
+                    for (var item of data) {
+                        total += item.value;
+                        var node = {};
+                        node.name = utils.resetArticleTypeName(item.key);
+                        node.value = item.value;
+                        seriesData.push(node);
+                    }
+                }
                 var option = {
                     tooltip: {
                         trigger: 'item',
@@ -138,17 +139,19 @@ const actions = {
                         }
                     ]
                 };
-
-                // make ArticleTypeChart description
-                var itemsStr = "";
-                seriesData.forEach(function (item, i) {
-                    if (i < 3) {
-                        itemsStr += "<span class='describe-redText'>" + item.name + item.value + "(" + (item.value * 100 / total).toFixed(2) + "%)</span>、";
-                    }
-                });
-                itemsStr = itemsStr.substring(0, itemsStr.length - 1) + "。";
-                var description = "<div class='describe-text'>根据互联网抓取的数据，对数据载体进行分析，共抓取数据<span class='describe-redText'>" + total + "</span>条，其中排名前三的为" + itemsStr + "</div>";
-
+                if (data.length > 0) {
+                    // make ArticleTypeChart description
+                    var itemsStr = "";
+                    seriesData.forEach(function (item, i) {
+                        if (i < 3) {
+                            itemsStr += "<span class='describe-redText'>" + item.name + item.value + "(" + (item.value * 100 / total).toFixed(2) + "%)</span>、";
+                        }
+                    });
+                    itemsStr = itemsStr.substring(0, itemsStr.length - 1) + "。";
+                    description = "<div class='describe-text'>根据互联网抓取的数据，对数据载体进行分析，共抓取数据<span class='describe-redText'>" + total + "</span>条，其中排名前三的为" + itemsStr + "</div>";
+                } else {
+                    description = "暂无相关数据";
+                }
                 renderData.option = option;
                 renderData.description = description;
             }
@@ -184,17 +187,18 @@ const actions = {
                 console.log('getMediaBarChart http request return!');
                 isReturn = true;
 
-                var seriesData = [];
-                var xAxisData = [];
-                data = data.sort(function (a, b) {
-                    return b.value - a.value;
-                });
-                for (var item of data) {
-                    var node = {};
-                    node.name = item.key;
-                    node.value = item.value;
-                    seriesData.push(node);
-                    xAxisData.push(item.key);
+                var seriesData = [], xAxisData = [], description = '';
+                if (data.length > 0) {
+                    data = data.sort(function (a, b) {
+                        return b.value - a.value;
+                    });
+                    for (var item of data) {
+                        var node = {};
+                        node.name = item.key;
+                        node.value = item.value;
+                        seriesData.push(node);
+                        xAxisData.push(item.key);
+                    }
                 }
                 var option = {
                     legend: {},
@@ -244,16 +248,20 @@ const actions = {
                     ]
                 };
 
-                var itemStr = "";
-                seriesData.forEach(function (item, i) {
-                    if (i < 4) {
-                        itemStr += "<span class='describe-redText'>" + item.name + "(" + item.value + ")" + "</span>、";
-                    }
-                });
+                if (data.length > 0) {
+                    var itemStr = "";
+                    seriesData.forEach(function (item, i) {
+                        if (i < 4) {
+                            itemStr += "<span class='describe-redText'>" + item.name + "(" + item.value + ")" + "</span>、";
+                        }
+                    });
 
-                itemStr = itemStr.substring(0, itemStr.length - 1);
+                    itemStr = itemStr.substring(0, itemStr.length - 1);
 
-                var description = "<div class='describe-text'>根据互联网抓取的数据，主流媒体报道较多的是" + itemStr + "等。</div>";
+                    description = "<div class='describe-text'>根据互联网抓取的数据，主流媒体报道较多的是" + itemStr + "等。</div>";
+                } else {
+                    description = "暂无相关数据";
+                }
                 renderData.option = option;
                 renderData.description = description;
             } else {
@@ -292,10 +300,10 @@ const actions = {
                 isReturn = true;
 
                 data = data.article;
-                var total = 0, seriesData = [], xAxisData = [], indexOfMax = 0, maxDate = "", indexOfMin = 0, minDate = "", legendData = [];
+                var total = 0, seriesData = [], xAxisData = [], indexOfMax = 0, maxDate = "", indexOfMin = 0, minDate = "", legendData = [], description = '';
                 if (report.type == "SPECIAL") {
-                    legendData.push("與情数目");
                     if (data.length > 0) {
+                        legendData.push("與情数目");
                         for (var item of data) {
                             var itemDate = dateUtil.parseDate(item.key);
                             var itemDateStr = dateUtil.formatDate(itemDate, 'yyyy-MM-dd');
@@ -359,8 +367,6 @@ const actions = {
                         }
                     ]
                 };
-
-                var description = '';
                 if (data.length > 0) {
                     var hotStartDate = dateUtil.formatDate(dateUtil.parseDate(maxDate), 'yyyy-MM-dd');
                     var hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
@@ -377,6 +383,8 @@ const actions = {
                         + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData[indexOfMax] + '</span>条。'
                         + heightStr + '<span class="describe-redText">' + minDate
                         + '</span>日最低，共有数据<span class="describe-redText">' + seriesData[indexOfMin] + '</span>条。</div>';
+                } else {
+                    description = "暂无相关数据";
                 }
                 renderData.option = option;
                 renderData.description = description;
@@ -414,23 +422,23 @@ const actions = {
             if (!error && response.statusCode == 200) {
                 console.log('getArticleHotPointChart http request return!');
                 isReturn = true;
-
-                // 拼装 chart option
-                if (data.length > 6) {
-                    data = data.slice(0, 6);
-                }
-                data = data.sort(function (a, b) {
-                    return a.value - b.value;
-                });
-
-                var seriesData = [];
-                var yAxisData = [];
-                for (var item of data) {
-                    seriesData.push(item.value);
-                    if (item.key.length > 18) {
-                        item.key = item.key.substring(0, 18) + '...';
+                var seriesData = [], yAxisData = [], description = '';
+                if (data.length > 0) {
+                    // 拼装 chart option
+                    if (data.length > 6) {
+                        data = data.slice(0, 6);
                     }
-                    yAxisData.push(item.key);
+                    data = data.sort(function (a, b) {
+                        return a.value - b.value;
+                    });
+
+                    for (var item of data) {
+                        seriesData.push(item.value);
+                        if (item.key.length > 18) {
+                            item.key = item.key.substring(0, 18) + '...';
+                        }
+                        yAxisData.push(item.key);
+                    }
                 }
                 var option = {
                     yAxis: {
@@ -480,19 +488,22 @@ const actions = {
                         }
                     ]
                 };
-
-                // make description
-                var dataMonth = parseInt(param.s_date.split("-")[1]);
-                var itemStr = "";
-                data = data.reverse();
-                data.forEach(function (item, i) {
-                    if (i < 3) {
-                        itemStr += '<span class="describe-redText">“' + item.key + '” (' + item.value + ')</span>、';
-                    }
-                });
-                itemStr = itemStr.substring(0, itemStr.length - 1);
-                var description = '<div class="describe-text">' + dataMonth + '月份媒体报道情况，从其具体内容方面也可以发现，主要话题集中在'
-                    + itemStr + '等几个方面。</div>';
+                if (data.length > 0) {
+                    // make description
+                    var dataMonth = parseInt(param.s_date.split("-")[1]);
+                    var itemStr = "";
+                    data = data.reverse();
+                    data.forEach(function (item, i) {
+                        if (i < 3) {
+                            itemStr += '<span class="describe-redText">“' + item.key + '” (' + item.value + ')</span>、';
+                        }
+                    });
+                    itemStr = itemStr.substring(0, itemStr.length - 1);
+                    description = '<div class="describe-text">' + dataMonth + '月份媒体报道情况，从其具体内容方面也可以发现，主要话题集中在'
+                        + itemStr + '等几个方面。</div>';
+                } else {
+                    description = "暂无相关数据";
+                }
                 renderData.option = option;
                 renderData.description = description;
             } else {
@@ -530,18 +541,19 @@ const actions = {
                 console.log('getHotAuthorChart http request return!');
                 isReturn = true;
 
-                var seriesData = [];
-                var xAxisData = [];
-                data = data.sort(function (a, b) {
-                    return b.value - a.value;
-                });
-                for (let item of data) {
-                    if (item.key && item.key !== "") {
-                        seriesData.push(item.value);
-                        if (item.key.length > 10) {
-                            item.key = item.key.substring(0, 10) + "...";
+                var seriesData = [], xAxisData = [], description = '';
+                if (data.length > 0) {
+                    data = data.sort(function (a, b) {
+                        return b.value - a.value;
+                    });
+                    for (let item of data) {
+                        if (item.key && item.key !== "") {
+                            seriesData.push(item.value);
+                            if (item.key.length > 10) {
+                                item.key = item.key.substring(0, 10) + "...";
+                            }
+                            xAxisData.push(item.key);
                         }
-                        xAxisData.push(item.key);
                     }
                 }
                 var option = {
@@ -592,17 +604,21 @@ const actions = {
                         }
                     ]
                 };
-                var itemStr = "";
-                data.forEach(function (item, i) {
-                    if (i < 5) {
-                        itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")" + "</span>、";
-                    }
-                });
+                if (data.length > 0) {
+                    var itemStr = "";
+                    data.forEach(function (item, i) {
+                        if (i < 5) {
+                            itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")" + "</span>、";
+                        }
+                    });
 
-                var length = data.length > 5 ? 5 : data.length;
+                    var length = data.length > 5 ? 5 : data.length;
 
-                itemStr = itemStr.substring(0, itemStr.length - 1);
-                var description = "<div class='describe-text'>参与话题讨论的网民中，讨论最为激烈的前<span class='describe-redText'>" + length + "</span>名网民分别为" + itemStr + "。</div>";
+                    itemStr = itemStr.substring(0, itemStr.length - 1);
+                    description = "<div class='describe-text'>参与话题讨论的网民中，讨论最为激烈的前<span class='describe-redText'>" + length + "</span>名网民分别为" + itemStr + "。</div>";
+                } else {
+                    description = "暂无相关数据";
+                }
                 renderData.option = option;
                 renderData.description = description;
             } else {
@@ -639,25 +655,24 @@ const actions = {
             if (!error && response.statusCode == 200) {
                 console.log('getFocusPeopleMapChart http request return!');
                 isReturn = true;
-
                 // 拼装 chart option
-                var maxCount = 0;
-                var seriesData = [];
-                for (let item of data) {
-                    var node = {};
-                    node.name = item.key;
-                    node.value = item.value;
-                    seriesData.push(node);
+                var maxCount = 0, seriesData = [], description = '';
+                if (data.length > 0) {
+                    for (let item of data) {
+                        var node = {};
+                        node.name = item.key;
+                        node.value = item.value;
+                        seriesData.push(node);
+                    }
+                    seriesData.sort(function (a, b) {
+                        return b.value - a.value
+                    });
+                    if (seriesData.length > 0) {
+                        maxCount = seriesData[0].value;
+                    } else {
+                        maxCount = 10;
+                    }
                 }
-                seriesData.sort(function (a, b) {
-                    return b.value - a.value
-                });
-                if (seriesData.length > 0) {
-                    maxCount = seriesData[0].value;
-                } else {
-                    maxCount = 10;
-                }
-
                 var option = {
                     tooltip: {
                         trigger: 'item',
@@ -688,17 +703,19 @@ const actions = {
                         }
                     ]
                 };
-
-                var itemStr = "";
-                seriesData.forEach(function (item, i) {
-                    if (i < 3) {
-                        itemStr += '<span class="describe-redText">“' + item.name + '” (' + item.value + ')</span>、';
-                    }
-                });
-                itemStr = itemStr.substring(0, itemStr.length - 1);
-                var description = '<div class="describe-text">从关注人群的地域分布来看，对参与话题讨论的网民言论样本进行分析发现,关注地域主要集中在'
-                    + itemStr + '等几个地区。</div>';
-
+                if (data.length > 0) {
+                    var itemStr = "";
+                    seriesData.forEach(function (item, i) {
+                        if (i < 3) {
+                            itemStr += '<span class="describe-redText">“' + item.name + '” (' + item.value + ')</span>、';
+                        }
+                    });
+                    itemStr = itemStr.substring(0, itemStr.length - 1);
+                    description = '<div class="describe-text">从关注人群的地域分布来看，对参与话题讨论的网民言论样本进行分析发现,关注地域主要集中在'
+                        + itemStr + '等几个地区。</div>';
+                } else {
+                    description = "暂无相关数据";
+                }
                 renderData.option = option;
                 renderData.description = description;
             } else {
@@ -735,29 +752,32 @@ const actions = {
             if (!error && response.statusCode == 200) {
                 console.log('getCommentHotKeywordsChart http request return!');
                 isReturn = true;
-
-                var keywords = [];
-                for (var item of data) {
-                    var keyword = {};
-                    keyword.keyword = item.key;
-                    keyword.score = item.value;
-                    keywords.push(keyword);
+                var keywords = [], description = '';
+                if (data.length > 0) {
+                    for (var item of data) {
+                        var keyword = {};
+                        keyword.keyword = item.key;
+                        keyword.score = item.value;
+                        keywords.push(keyword);
+                    }
                 }
-
                 var option = {
                     data: keywords
                 };
+                if (data.length > 0) {
+                    var itemStr = "";
+                    data.forEach(function (item, i) {
+                        if (i < 5) {
+                            itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")" + "</span>、";
+                        }
+                    });
 
-                var itemStr = "";
-                data.forEach(function (item, i) {
-                    if (i < 5) {
-                        itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")" + "</span>、";
-                    }
-                });
+                    itemStr = itemStr.substring(0, itemStr.length - 1);
 
-                itemStr = itemStr.substring(0, itemStr.length - 1);
-
-                var description = "<div class='describe-text'>根据互联网抓取的数据，热点关键词词频较高的是" + itemStr + "等。</div>";
+                    description = "<div class='describe-text'>根据互联网抓取的数据，热点关键词词频较高的是" + itemStr + "等。</div>";
+                } else {
+                    description = "暂无相关数据";
+                }
                 renderData.option = option;
                 renderData.description = description;
             } else {

@@ -60,7 +60,7 @@ const chart = {
 
         config.option.animation = false;
         // if the chart type is map should call the geo json to render the map chart.
-        if (config.option.series[0] && config.option.series[0].type === 'map') {
+        if (config.option.series && config.option.series[0] && config.option.series[0].type === 'map') {
             var mapType = config.option.series[0].mapType;
             var mapJson = getMapJson(mapType);
             echarts.registerMap(mapType, mapJson);
