@@ -46,8 +46,12 @@ const actions = {
 
     // 月报概述
     getBriefingOutline: function (report) {
-        var outline = "", isReturn = false;
-        var urlPath = url.webserviceUrl + '/description/monthLyOutline/';
+        var outline = "", isReturn = false, urlPath = '';
+        if (report.reportType === 'MONTHLY') {
+            urlPath = url.webserviceUrl + '/description/monthLyOutline/';
+        } else if (report.reportType === 'WEEKLY') {
+            urlPath = url.webserviceUrl + '/description/weeklyOutline/';
+        }
         var param = {
             "date": {
                 "startDate": report.startDate,
@@ -68,13 +72,26 @@ const actions = {
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 isReturn = true;
-
-                var total = 0, compareLastMonth = '';
-                if (data.mom > 0) {
-                    compareLastMonth = "增加" + data.mom.toFixed(2) + "％";
-                } else {
-                    compareLastMonth = "减少" + data.mom.toFixed(2) + "％";
+                var total = 0, count = 0, comparePercent = 0, compareLast = '', time = '';
+                if (report.reportType === 'MONTHLY') {
+                    count = data.monthCount;
+                    comparePercent = data.mom;
+                    time = '月';
+                } else if (report.reportType === 'WEEKLY') {
+                    count = data.weekCount;
+                    comparePercent = data.wow;
+                    time = '周';
                 }
+
+                if (count > 0) {
+                    total = count;
+                }
+                if (comparePercent > 0) {
+                    compareLast = "增加" + comparePercent.toFixed(2) + "％";
+                } else {
+                    compareLast = "减少" + comparePercent.toFixed(2) + "％";
+                }
+
                 var keywords = '';
                 var mustWordArray = report.mustWord.split('@');
                 var shouldWordArray = report.shouldWord.split('@');
@@ -87,26 +104,27 @@ const actions = {
                 keywords = mustWordArray.join('、') + shouldWordArray.join('、');
                 keywords = keywords.substring(0, keywords.length - 1);
 
-                var itemStr = "";
+                var itemStr = "", itemCompareLast = '';
                 if (data.maxSite.length > 0) {
                     data.maxSite.forEach(function (item) {
                         data.compare.forEach(function (obj) {
                             if (item.key === obj.key) {
                                 if (obj.value > 0) {
-                                    compareLastMonth = "增加" + obj.value.toFixed(2) + "％";
+                                    itemCompareLast = "增加" + obj.value.toFixed(2) + "％";
                                 } else {
-                                    compareLastMonth = "减少" + obj.value.toFixed(2) + "％";
+                                    itemCompareLast = "减少" + obj.value.toFixed(2) + "％";
                                 }
-                                itemStr += utils.resetArticleTypeName(item.key)
-                                    + item.value + '条,同比上月' + compareLastMonth + "。";　
+                                itemStr += "<span class='describe-redText'>" + utils.resetArticleTypeName(item.key)
+                                    + "（" + item.value + '）</span>条,同比上' + time + "<span class='describe-redText'>" +  itemCompareLast + "</span>。";
                             }
                         });
                     })
 
                 }
 
-                outline = "本月共抓取数据<span class='describe-redText'>" + total + "</span>条，同比上月<span class='describe-redText'>" + compareLastMonth
-                    + "</span>，本月共抓取" + keywords + "相关" + itemStr;
+                outline = "<div class='describe-text'>本" + time + "共抓取数据<span class='describe-redText'>" + total +
+                    "</span>条，同比上" + time + "<span class='describe-redText'>" + compareLast
+                    + "</span>，本" + time + "共抓取" + keywords + "相关" + itemStr + "。</div>";
             }
         });
         while (!isReturn) {
@@ -1183,7 +1201,7 @@ const actions = {
                 console.log('getAccidentMapChart http request return!');
                 isReturn = true;
 
-                var total = 0, maxCount = 0, seriesData = [], description = '';
+                var total = 0, maxCount = 10, seriesData = [], description = '';
                 // 拼装 chart option
                 if (data.length > 0) {
                     for (var item of data) {
@@ -1198,8 +1216,6 @@ const actions = {
                     });
                     if (seriesData.length > 0) {
                         maxCount = seriesData[0].value == undefined ? 10 : seriesData[0].value;
-                    } else {
-                        maxCount = 10;
                     }
                 }
 

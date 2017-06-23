@@ -27,6 +27,7 @@ var action = {
         var isReturn = false;
         if (reportType === "SPECIAL") {
             // 如果是专报，　通过专报Id获取关键词信息
+            debugger;
             var urlPath = url.webserviceUrl + '/customSubject/' + reportId;
             request({
                 url: urlPath,

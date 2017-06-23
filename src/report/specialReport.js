@@ -67,7 +67,7 @@ const actions = {
 
     // 與情综述描述
     getSpecialSummarize: function (report) {
-        var renderData = {}, isReturn = false, description = ""　;
+        var renderData = {}, isReturn = false, description = "";
         var option = {};
         var urlPath = url.webserviceUrl + '/description/specialOutline/';
         var param = {
@@ -90,6 +90,45 @@ const actions = {
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 isReturn = true;
+
+                var total = 0;
+                if (data.monthCount > 0) {
+                    total = data.monthCount;
+                }
+                var typeItemStr = "", siteItemStr = "", titleItemStr = "";
+                if (data.maxType.length > 0) {
+                    data.maxType.forEach(function (item, i) {
+                        if (i < 3) {
+                            typeItemStr += "<span class='describe-redText'>" + utils.resetArticleTypeName(item.key) + "（"
+                                + item.value + "）</span>条、";
+                        }
+
+                    })
+                }
+                typeItemStr = typeItemStr.substring(0, typeItemStr.length - 1);
+                if (data.maxSite.length > 0) {
+                    data.maxSite.forEach(function (item, i) {
+                        if (i < 3) {
+                            siteItemStr += "<span class='describe-redText'>" + item.key + "（"
+                                + item.value + "）</span>条、";
+                        }
+                    })
+                }
+                siteItemStr = siteItemStr.substring(0, siteItemStr.length - 1);
+                if (data.maxTitle.length > 0) {
+                    data.maxTitle.forEach(function (item, i) {
+                        if (i < 3) {
+                            titleItemStr += "<span class='describe-redText'>“" + item.key + "”（"
+                                + item.value + "）</span>条、";
+                        }
+                    })
+                }
+                titleItemStr = titleItemStr.substring(0, titleItemStr.length - 1);
+
+                description = "<div class='describe-text'>从<span class='describe-redText'>" + report.startDate + "</span>至<span class='describe-redText'>"
+                    + report.endDate + "</span>共抓取<span class='describe-redText'>" + report.name +
+                    "</span>专题相关数据<span class='describe-redText'>" + total + "</span>条，其中" + typeItemStr
+                    + "</span>，相对活跃的平台为" + siteItemStr + "，以下新闻传播较为广泛，" + titleItemStr + "。</div>";
 
             }
         });
@@ -676,7 +715,7 @@ const actions = {
                 console.log('getFocusPeopleMapChart http request return!');
                 isReturn = true;
                 // 拼装 chart option
-                var maxCount = 0, seriesData = [], description = '';
+                var maxCount = 10, seriesData = [], description = '';
                 if (data.length > 0) {
                     for (let item of data) {
                         var node = {};
@@ -689,8 +728,6 @@ const actions = {
                     });
                     if (seriesData.length > 0) {
                         maxCount = seriesData[0].value;
-                    } else {
-                        maxCount = 10;
                     }
                 }
                 var option = {
