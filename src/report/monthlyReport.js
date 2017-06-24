@@ -502,69 +502,69 @@ const actions = {
                 };
 
                 if (data.length > 0) {
-                    var waveResultStr = "";
+                    var waveResultStr = "", timeType = "", lastTimeStr = "", thisTimeStr = "", hotStartDateTemp = '',
+                        heightStr = "", thisMaxDay = '', thisMaxData = "", thisMinDay = '', thisMinData = "",
+                        lastMaxDay = '', lastMaxData = "", lastMinDay = '', lastMinData = "";
                     var wave = descriptionUtil.getTrendOfOpinion(lastMonthNum, monthNum);
                     if (wave) {
                         waveResultStr = '波动更大,个别话题引起舆情热度较大起伏';
                     } else {
                         waveResultStr = '更平稳一些,但是个别话题引起舆情热度较大起伏';
                     }
-                    var waveStr = "";
-                    if (report.type == "MONTHLY") {
-                        waveStr = '从舆情热度趋势来看, <span class="describe-redText">' + parseInt(startTempDate.getMonth() + 1)
-                            + '</span>月份的舆情热度与<span class="describe-redText">' + parseInt(startDate.getMonth() + 1)
-                            + '</span>月份相比' + waveResultStr + "。";
-                    } else if (report.type == "WEEKLY") {
-                        waveStr = '从舆情热度趋势来看, <span class="describe-redText">本周</span>的舆情热度与<span class="describe-redText">上周</span>相比' + waveResultStr + "。";
-                    }
 
-                    var hotStartDateTemp = '', hotStartDate = '', hotEndDate = '', heightData = '', heightStr = "";
                     if (report.type == "MONTHLY") {
+                        timeType = "月";
+                        thisTimeStr = parseInt(startTempDate.getMonth() + 1) + timeType;
+                        lastTimeStr = parseInt(startDate.getMonth() + 1) + timeType;
                         hotStartDateTemp = startTempDate.getFullYear() + "-" + parseInt(startTempDate.getMonth() + 1) + "-" + parseInt(indexOfMax_b + 1);
-                        hotStartDate = dateUtil.formatDate(dateUtil.parseDate(hotStartDateTemp), 'yyyy-MM-dd');
-                        hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
-                        heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
-                        if (heightData.key) {
-                            heightStr = '<span class="describe-redText">' + parseInt(indexOfMax_b + 1) + '</span>日，<span class="describe-redText">＂' + heightData.key
-                                + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本月的舆情高峰。';
-                        }
+
+                        thisMaxDay = parseInt(indexOfMax_b + 1) + "日";
+                        thisMaxData = seriesData_b[indexOfMax_b];
+                        thisMinDay = parseInt(indexOfMin_b + 1) + "日";
+                        thisMinData = seriesData_b[indexOfMin_b];
+                        lastMaxDay = parseInt(indexOfMax_a + 1) + "日";
+                        lastMaxData = seriesData_a[indexOfMax_a];
+                        lastMinDay = parseInt(indexOfMin_a + 1) + "日";
+                        lastMinData = seriesData_a[indexOfMin_a];
                     } else if (report.type == "WEEKLY") {
+                        timeType = "周";
+                        thisTimeStr = "本" + timeType;
+                        lastTimeStr = "上" + timeType;
                         hotStartDateTemp = data[indexOfMax_b].key;
-                        hotStartDate = dateUtil.formatDate(dateUtil.parseDate(hotStartDateTemp), 'yyyy-MM-dd');
-                        hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
-                        heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
-                        if (heightData.key) {
-                            heightStr = '<span class="describe-redText">' + xAxisData[indexOfMax_b] + '</span>，<span class="describe-redText">＂' + heightData.key
-                                + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本周的舆情高峰。';
-                        }
+
+                        thisMaxDay = xAxisData[indexOfMax_b];
+                        thisMaxData = seriesData_b[indexOfMax_b];
+                        thisMinDay = xAxisData[indexOfMin_b];
+                        thisMinData = seriesData_b[indexOfMin_b];
+                        lastMaxDay = xAxisData[indexOfMax_a];
+                        lastMaxData = seriesData_a[indexOfMax_a];
+                        lastMinDay = xAxisData[indexOfMin_a];
+                        lastMinData = seriesData_a[indexOfMin_a];
                     }
 
-                    if (report.type == "MONTHLY") {
-                        // make ArticleTypeChart description
-                        description = '<div class="describe-text">' + waveStr + '<span class="describe-redText">'
-                            + parseInt(startTempDate.getMonth() + 1) + '</span>月份中，共抓取互联网数据<span class="describe-redText">' + total_b
-                            + '</span>条，其中<span class="describe-redText">' + parseInt(indexOfMax_b + 1)
-                            + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData_b[indexOfMax_b] + '</span>条。'
-                            + heightStr + '<span class="describe-redText">' + parseInt(indexOfMin_b + 1)
-                            + '</span>日最低，共有数据<span class="describe-redText">' + seriesData_b[indexOfMin_b] + '</span>条。'
-                            + '环比<span class="describe-redText">' + parseInt(startDate.getMonth() + 1) + '</span>月份，共抓取互联网数据'
-                            + '<span class="describe-redText">' + total_a + '</span>条，其中<span class="describe-redText">' + parseInt(indexOfMax_a + 1)
-                            + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData_a[indexOfMax_a] + '</span>条。'
-                            + '<span class="describe-redText">' + parseInt(indexOfMin_a + 1)
-                            + '</span>日最低，共有数据<span class="describe-redText">' + seriesData_a[indexOfMin_a] + '</span>条。</div>';
-                    } else if (report.type == "WEEKLY") {
-                        description = '<div class="describe-text">' + waveStr
-                            + '<span class="describe-redText">本周</span>，共抓取互联网数据<span class="describe-redText">' + total_b
-                            + '</span>条，其中<span class="describe-redText">' + xAxisData[indexOfMax_b]
-                            + '</span>热度最高，共有数据<span class="describe-redText">' + seriesData_b[indexOfMax_b] + '</span>条。'
-                            + heightStr + '<span class="describe-redText">' + xAxisData[indexOfMin_b]
-                            + '</span>最低，共有数据<span class="describe-redText">' + seriesData_b[indexOfMin_b] + '</span>条。'
-                            + '环比<span class="describe-redText">上周</span>，共抓取互联网数据' + '<span class="describe-redText">' + total_a
-                            + '</span>条，其中<span class="describe-redText">' + xAxisData[indexOfMax_a]
-                            + '</span>热度最高，共有数据<span class="describe-redText">' + seriesData_a[indexOfMax_a] + '</span>条。'
-                            + '<span class="describe-redText">' + xAxisData[indexOfMin_a]
-                            + '</span>最低，共有数据<span class="describe-redText">' + seriesData_a[indexOfMin_a] + '</span>条。</div>';
+                    var waveStr = '从舆情热度趋势来看, <span class="describe-redText">' + thisTimeStr
+                        + '</span>的舆情热度与<span class="describe-redText">' + lastTimeStr
+                        + '</span>相比' + waveResultStr + "。";
+
+                    var hotStartDate = dateUtil.formatDate(dateUtil.parseDate(hotStartDateTemp), 'yyyy-MM-dd');
+                    var hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
+                    var heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
+                    if (heightData.key) {
+                        heightStr = '<span class="describe-redText">' + thisMaxDay + '</span>，<span class="describe-redText">＂' + heightData.key
+                            + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本' + timeType + '的舆情高峰。';
                     }
+                    // make ArticleTypeChart description
+                    description = '<div class="describe-text">' + waveStr + '<span class="describe-redText">'
+                        + thisTimeStr + '</span>中，共抓取互联网数据<span class="describe-redText">' + total_b
+                        + '</span>条，其中<span class="describe-redText">' + thisMaxDay
+                        + '</span>热度最高，共有数据<span class="describe-redText">'
+                        + thisMaxData + '</span>条。' + heightStr + '<span class="describe-redText">'
+                        + thisMinDay + '</span>最低，共有数据<span class="describe-redText">' + thisMinData + '</span>条。'
+                        + '环比<span class="describe-redText">' + lastTimeStr + '</span>，共抓取互联网数据'
+                        + '<span class="describe-redText">' + total_a + '</span>条，其中<span class="describe-redText">' + lastMaxDay
+                        + '</span>热度最高，共有数据<span class="describe-redText">' + lastMaxData + '</span>条。'
+                        + '<span class="describe-redText">' + lastMinDay
+                        + '</span>日最低，共有数据<span class="describe-redText">' + lastMinData + '</span>条。</div>';
                 } else {
                     description = "暂无相关数据";
                 }
