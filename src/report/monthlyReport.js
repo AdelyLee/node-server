@@ -15,10 +15,10 @@ const actions = {
     // 月报标题
     getBriefingTitle: function (report) {
         var title = '', reportTime = '';
-        if (report.reportType == 'MONTHLY') {
+        if (report.type == 'MONTHLY') {
             reportTime = dateUtil.formatDate(dateUtil.parseDate(report.startDate), 'yyyy年MM月');
             title = '月报－' + reportTime;
-        } else {
+        } else if (report.type == 'WEEKLY') {
             reportTime = dateUtil.formatDate(dateUtil.parseDate(report.startDate), 'yyyy年MM月dd日');
             title = '周报－' + reportTime;
         }
@@ -46,10 +46,11 @@ const actions = {
 
     // 月报概述
     getBriefingOutline: function (report) {
+        console.log("get briefing outline");
         var outline = "", isReturn = false, urlPath = '';
-        if (report.reportType === 'MONTHLY') {
+        if (report.type === 'MONTHLY') {
             urlPath = url.webserviceUrl + '/description/monthLyOutline/';
-        } else if (report.reportType === 'WEEKLY') {
+        } else if (report.type === 'WEEKLY') {
             urlPath = url.webserviceUrl + '/description/weeklyOutline/';
         }
         var param = {
@@ -73,11 +74,11 @@ const actions = {
             if (!error && response.statusCode == 200) {
                 isReturn = true;
                 var total = 0, count = 0, comparePercent = 0, compareLast = '', time = '';
-                if (report.reportType === 'MONTHLY') {
+                if (report.type === 'MONTHLY') {
                     count = data.monthCount;
                     comparePercent = data.mom;
                     time = '月';
-                } else if (report.reportType === 'WEEKLY') {
+                } else if (report.type === 'WEEKLY') {
                     count = data.weekCount;
                     comparePercent = data.wow;
                     time = '周';
@@ -101,8 +102,8 @@ const actions = {
                 if (shouldWordArray.length > 2) {
                     shouldWordArray = shouldWordArray.slice(0, 2);
                 }
-                keywords = mustWordArray.join('、') + shouldWordArray.join('、');
-                keywords = keywords.substring(0, keywords.length - 1);
+                keywords = mustWordArray.join('、') + '、' + shouldWordArray.join('、');
+                keywords = keywords.substring(0, keywords.length);
 
                 var itemStr = "", itemCompareLast = '';
                 if (data.maxSite.length > 0) {
@@ -115,16 +116,16 @@ const actions = {
                                     itemCompareLast = "减少" + obj.value.toFixed(2) + "％";
                                 }
                                 itemStr += "<span class='describe-redText'>" + utils.resetArticleTypeName(item.key)
-                                    + "（" + item.value + '）</span>条,同比上' + time + "<span class='describe-redText'>" +  itemCompareLast + "</span>。";
+                                    + "（" + item.value + '）</span>条,同比上' + time + "<span class='describe-redText'>" + itemCompareLast + "</span>，";
                             }
                         });
                     })
 
+                    itemStr = itemStr.substring(0, itemStr.length - 1);
                 }
-
                 outline = "<div class='describe-text'>本" + time + "共抓取数据<span class='describe-redText'>" + total +
                     "</span>条，同比上" + time + "<span class='describe-redText'>" + compareLast
-                    + "</span>，本" + time + "共抓取" + keywords + "相关" + itemStr + "。</div>";
+                    + "</span>，本" + time + "共抓取<span class='describe-redText'>" + keywords + "</span>相关" + itemStr + "。</div>";
             }
         });
         while (!isReturn) {
@@ -363,7 +364,8 @@ const actions = {
             mustNotWord: report.mustNotWord,
             shouldWord: report.shouldWord,
             s_date: report.trendStartData,
-            e_date: report.endDate
+            e_date: report.endDate,
+            articleType: 'article'
         };
 
         var urlPath = url.webserviceUrl + '/es/filterAndGroupByTime.json?' + querystring.stringify(param);
@@ -375,7 +377,14 @@ const actions = {
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getArticleTrendChart http request return!');
+                data = data.article;
                 isReturn = true;
+
+                var lastTimeStart = dateUtil.parseDate(report.trendStartData).getTime();
+                var lastTimeEnd = dateUtil.parseDate(report.startDate).getTime();
+                var thisTimeStart = lastTimeEnd;
+                var thisTimeEnd = dateUtil.parseDate(report.endDate).getTime();
+
                 var description = '';
                 var total_a = 0, total_b = 0, seriesData_a = [], seriesData_b = [], xAxisData = [], xAxisData_a = [], xAxisData_b = [], indexOfMax_a = 0, indexOfMin_a = 0, indexOfMax_b = 0, indexOfMin_b = 0, legendData = [];
                 var startDate, startTempDate, startDateStr, endDateStr;
@@ -384,24 +393,40 @@ const actions = {
                     startTempDate = dateUtil.addDate(startDate, "M", 1);
                     startDateStr = dateUtil.formatDate(startDate, 'yyyy年MM月');
                     endDateStr = dateUtil.formatDate(startTempDate, 'yyyy年MM月');
+                } else if (report.type == "WEEKLY") {
+                    startDate = dateUtil.parseDate(param.s_date);
+                    startTempDate = dateUtil.addDate(startDate, "d", 7);
+                    startDateStr = dateUtil.formatDate(startDate, '上周');
+                    endDateStr = dateUtil.formatDate(startTempDate, '本周');
                 }
                 legendData.push(startDateStr);
                 legendData.push(endDateStr);
 
-                var lastMonthNum = [], monthNum = [];
+                var lastMonthNum = [], monthNum = [], itemDateStr = '';
                 if (data.length > 0) {
                     for (var item of data) {
                         var itemDate = dateUtil.parseDate(item.key);
-                        var itemDateStr = dateUtil.formatDate(itemDate, 'yyyy-MM');
-                        if (itemDateStr == dateUtil.formatDate(startDate, 'yyyy-MM')) {
-                            xAxisData_a.push(itemDate.getDate());
+                        var itemTime = itemDate.getTime();
+                        if (report.type == "MONTHLY") {
+                            itemDateStr = dateUtil.formatDate(itemDate, 'yyyy-MM');
+                        } else if (report.type == "WEEKLY") {
+                            itemDateStr = utils.resetDate(itemDate.getDay());
+                        }
+                        if (itemTime >= lastTimeStart && itemTime < lastTimeEnd) {
+                            if (report.type == "MONTHLY") {
+                                xAxisData_a.push(itemDate.getDate());
+                            } else if (report.type == "WEEKLY") {
+                                xAxisData_a.push(itemDateStr);
+                            }
                             seriesData_a.push(item.value);
-
                             lastMonthNum.push(item);
-                        } else if (itemDateStr == dateUtil.formatDate(startTempDate, 'yyyy-MM')) {
-                            xAxisData_b.push(itemDate.getDate());
+                        } else if (itemTime >= thisTimeStart && itemTime < thisTimeEnd) {
+                            if (report.type == "MONTHLY") {
+                                xAxisData_b.push(itemDate.getDate());
+                            } else if (report.type == "WEEKLY") {
+                                xAxisData_b.push(itemDateStr);
+                            }
                             seriesData_b.push(item.value);
-
                             monthNum.push(item);
                         }
                     }
@@ -428,6 +453,7 @@ const actions = {
                 }
 
                 var option = {
+                    tooltip: {trigger: 'axis'},
                     legend: {
                         x: 'right',
                         y: 'middle',
@@ -443,7 +469,6 @@ const actions = {
                     color: ['#e7ba09', '#30a8dd'],
                     xAxis: {
                         type: 'category',
-                        boundaryGap: false,
                         data: xAxisData,
                         axisLabel: {
                             textStyle: {
@@ -484,35 +509,66 @@ const actions = {
                     } else {
                         waveResultStr = '更平稳一些,但是个别话题引起舆情热度较大起伏';
                     }
-                    var waveStr = '从舆情热度趋势来看, <span class="describe-redText">' + parseInt(startTempDate.getMonth() + 1)
-                        + '</span>月份的舆情热度与<span class="describe-redText">' + parseInt(startDate.getMonth() + 1)
-                        + '</span>月份相比' + waveResultStr + "。";
-
-                    var hotStartDateTemp = startTempDate.getFullYear() + "-" + parseInt(startTempDate.getMonth() + 1) + "-" + parseInt(indexOfMax_b + 1);
-                    var hotStartDate = dateUtil.formatDate(dateUtil.parseDate(hotStartDateTemp), 'yyyy-MM-dd');
-                    var hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
-                    var heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
-                    var heightStr = "";
-                    if (heightData.key) {
-                        heightStr = '<span class="describe-redText">' + parseInt(indexOfMax_b + 1) + '</span>日，<span class="describe-redText">＂' + heightData.key
-                            + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本月的舆情高峰。';
+                    var waveStr = "";
+                    if (report.type == "MONTHLY") {
+                        waveStr = '从舆情热度趋势来看, <span class="describe-redText">' + parseInt(startTempDate.getMonth() + 1)
+                            + '</span>月份的舆情热度与<span class="describe-redText">' + parseInt(startDate.getMonth() + 1)
+                            + '</span>月份相比' + waveResultStr + "。";
+                    } else if (report.type == "WEEKLY") {
+                        waveStr = '从舆情热度趋势来看, <span class="describe-redText">本周</span>的舆情热度与<span class="describe-redText">上周</span>相比' + waveResultStr + "。";
                     }
 
-                    // make ArticleTypeChart description
-                    description = '<div class="describe-text">' + waveStr + '<span class="describe-redText">'
-                        + parseInt(startTempDate.getMonth() + 1) + '</span>月份中，共抓取互联网数据<span class="describe-redText">' + total_b
-                        + '</span>条，其中<span class="describe-redText">' + parseInt(indexOfMax_b + 1)
-                        + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData_b[indexOfMax_b] + '</span>条。'
-                        + heightStr + '<span class="describe-redText">' + parseInt(indexOfMin_b + 1)
-                        + '</span>日最低，共有数据<span class="describe-redText">' + seriesData_b[indexOfMin_b] + '</span>条。'
-                        + '环比<span class="describe-redText">' + parseInt(startDate.getMonth() + 1) + '</span>月份，共抓取互联网数据'
-                        + '<span class="describe-redText">' + total_a + '</span>条，其中<span class="describe-redText">' + parseInt(indexOfMax_a + 1)
-                        + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData_a[indexOfMax_a] + '</span>条。'
-                        + '<span class="describe-redText">' + parseInt(indexOfMin_a + 1)
-                        + '</span>日最低，共有数据<span class="describe-redText">' + seriesData_a[indexOfMin_a] + '</span>条。</div>';
+                    var hotStartDateTemp = '', hotStartDate = '', hotEndDate = '', heightData = '', heightStr = "";
+                    if (report.type == "MONTHLY") {
+                        hotStartDateTemp = startTempDate.getFullYear() + "-" + parseInt(startTempDate.getMonth() + 1) + "-" + parseInt(indexOfMax_b + 1);
+                        hotStartDate = dateUtil.formatDate(dateUtil.parseDate(hotStartDateTemp), 'yyyy-MM-dd');
+                        hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
+                        heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
+                        if (heightData.key) {
+                            heightStr = '<span class="describe-redText">' + parseInt(indexOfMax_b + 1) + '</span>日，<span class="describe-redText">＂' + heightData.key
+                                + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本月的舆情高峰。';
+                        }
+                    } else if (report.type == "WEEKLY") {
+                        hotStartDateTemp = data[indexOfMax_b].key;
+                        hotStartDate = dateUtil.formatDate(dateUtil.parseDate(hotStartDateTemp), 'yyyy-MM-dd');
+                        hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd');
+                        heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
+                        if (heightData.key) {
+                            heightStr = '<span class="describe-redText">' + xAxisData[indexOfMax_b] + '</span>，<span class="describe-redText">＂' + heightData.key
+                                + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本周的舆情高峰。';
+                        }
+                    }
+
+                    if (report.type == "MONTHLY") {
+                        // make ArticleTypeChart description
+                        description = '<div class="describe-text">' + waveStr + '<span class="describe-redText">'
+                            + parseInt(startTempDate.getMonth() + 1) + '</span>月份中，共抓取互联网数据<span class="describe-redText">' + total_b
+                            + '</span>条，其中<span class="describe-redText">' + parseInt(indexOfMax_b + 1)
+                            + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData_b[indexOfMax_b] + '</span>条。'
+                            + heightStr + '<span class="describe-redText">' + parseInt(indexOfMin_b + 1)
+                            + '</span>日最低，共有数据<span class="describe-redText">' + seriesData_b[indexOfMin_b] + '</span>条。'
+                            + '环比<span class="describe-redText">' + parseInt(startDate.getMonth() + 1) + '</span>月份，共抓取互联网数据'
+                            + '<span class="describe-redText">' + total_a + '</span>条，其中<span class="describe-redText">' + parseInt(indexOfMax_a + 1)
+                            + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData_a[indexOfMax_a] + '</span>条。'
+                            + '<span class="describe-redText">' + parseInt(indexOfMin_a + 1)
+                            + '</span>日最低，共有数据<span class="describe-redText">' + seriesData_a[indexOfMin_a] + '</span>条。</div>';
+                    } else if (report.type == "WEEKLY") {
+                        description = '<div class="describe-text">' + waveStr
+                            + '<span class="describe-redText">本周</span>，共抓取互联网数据<span class="describe-redText">' + total_b
+                            + '</span>条，其中<span class="describe-redText">' + xAxisData[indexOfMax_b]
+                            + '</span>热度最高，共有数据<span class="describe-redText">' + seriesData_b[indexOfMax_b] + '</span>条。'
+                            + heightStr + '<span class="describe-redText">' + xAxisData[indexOfMin_b]
+                            + '</span>最低，共有数据<span class="describe-redText">' + seriesData_b[indexOfMin_b] + '</span>条。'
+                            + '环比<span class="describe-redText">上周</span>，共抓取互联网数据' + '<span class="describe-redText">' + total_a
+                            + '</span>条，其中<span class="describe-redText">' + xAxisData[indexOfMax_a]
+                            + '</span>热度最高，共有数据<span class="describe-redText">' + seriesData_a[indexOfMax_a] + '</span>条。'
+                            + '<span class="describe-redText">' + xAxisData[indexOfMin_a]
+                            + '</span>最低，共有数据<span class="describe-redText">' + seriesData_a[indexOfMin_a] + '</span>条。</div>';
+                    }
                 } else {
                     description = "暂无相关数据";
                 }
+
                 renderData.option = option;
                 renderData.description = description;
             }
@@ -537,7 +593,8 @@ const actions = {
             mustNotWord: report.mustNotWord,
             shouldWord: report.shouldWord,
             s_date: report.startDate,
-            e_date: report.endDate
+            e_date: report.endDate,
+            articleType: 'news'
         };
 
         var urlPath = url.webserviceUrl + '/es/filterAndGroupBy.json?' + querystring.stringify(param);
@@ -625,6 +682,9 @@ const actions = {
                     var itemStr = "";
                     data = data.reverse();
                     data.forEach(function (item, i) {
+                        if (item.key.length > 30) {
+                            item.key = item.key.substring(0, 30) + '...';
+                        }
                         if (i < 3) {
                             itemStr += '<span class="describe-redText">“' + item.key + '” (' + item.value + ')</span>、';
                         }
@@ -649,7 +709,7 @@ const actions = {
         return renderData;
     },
 
-//新闻情感类型
+    //新闻情感类型
     getNewsEmotionPieChart: function (report) {
         var renderData = {}, isReturn = false;
         var param = {
@@ -770,7 +830,7 @@ const actions = {
         return renderData;
     },
 
-//主流媒体
+    //主流媒体
     getMediaBarChart: function (report) {
         var renderData = {}, isReturn = false;
         var param = {
@@ -779,10 +839,11 @@ const actions = {
             mustNotWord: report.mustNotWord,
             shouldWord: report.shouldWord,
             s_date: report.startDate,
-            e_date: report.endDate
+            e_date: report.endDate,
+            articleType: "news"
         };
 
-        var urlPath = url.webserviceUrl + '/news/filterAndGroupBy.json?' + querystring.stringify(param);
+        var urlPath = url.webserviceUrl + '/es/filterAndGroupBy.json?' + querystring.stringify(param);
         request({
             url: urlPath,
             method: "get",
@@ -882,7 +943,7 @@ const actions = {
         return renderData;
     },
 
-// 获取热点关键词词云
+    // 获取热点关键词词云
     getArticleHotKeywordsChart: function (report) {
         var renderData = {}, isReturn = false;
         var param = {
@@ -944,8 +1005,7 @@ const actions = {
         }
 
         return renderData;
-    }
-    ,
+    },
 
 // 本月事故情况
 // getMonthAccidentChart: function (report) {
@@ -1063,217 +1123,217 @@ const actions = {
 //     return renderData;
 // },
 
-//事故类型饼图
-    getAccidentTypeChart: function (report) {
-        var renderData = {}, isReturn = false;
-        var param = {
-            "date": {
-                "startDate": report.startDate,
-                "endDate": report.endDate
-            },
-            "page": {
-                "orders": [{
-                    "direction": "DESC",
-                    "orderBy": "count"
-                }],
-                "page": 1
-            },
-            "types": [
-                "atype"
-            ]
-        };
-
-        var urlPath = url.webserviceUrl + '/accident/aggByTypes';
-        request({
-            url: urlPath,
-            method: "post",
-            json: true,
-            headers: headers.getRequestHeader(),
-            body: param
-        }, function (error, response, data) {
-            if (!error && response.statusCode == 200) {
-                console.log('getAccidentTypeChart http request return!');
-                isReturn = true;
-
-                var total = 0, seriesData = [], description = '';
-                if (data.length > 0) {
-                    // 拼装 chart option
-                    for (var item of data) {
-                        var node = {};
-                        node.name = item.id;
-                        node.value = item.count;
-                        seriesData.push(node);
-                        total += item.count;
-                    }
-                }
-                var option = {
-                    tooltip: {
-                        trigger: 'item',
-                        formatter: "{a} <br/>{b}: {c} ({d}%)"
-                    },
-                    legend: {},
-                    series: [
-                        {
-                            name: '事故类型',
-                            type: 'pie',
-                            radius: ['0%', '55%'],
-                            label: {
-                                normal: {
-                                    show: true,
-                                    textStyle: {
-                                        fontSize: 20
-                                    }
-                                }
-                            },
-                            data: seriesData,
-                            itemStyle: {
-                                normal: {
-                                    color: function (params) {
-                                        // build a color map as your need.
-                                        var colorList = [
-                                            '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
-                                            '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
-                                            '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
-                                        ];
-                                        return colorList[params.dataIndex % 15]
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                };
-                if (data.length > 0) {
-                    var itemStr = "";
-                    seriesData.forEach(function (item, i) {
-                        if (i < 5) {
-                            itemStr += "<span class='describe-redText'>" + item.name + "(" + (item.value * 100 / total).toFixed(2) + "%)</span>、";
-                        }
-                    });
-                    itemStr = itemStr.substring(0, itemStr.length - 1) + "。";
-                    description = "<div class='describe-text'>从本月安全生产事故类型来看，多发事故的类型为" + itemStr + "</div>";
-                } else {
-                    description = "";
-                }
-                renderData.option = option;
-                renderData.description = description;
-            } else {
-                console.log("get getAccidentTypeChart data error");
-            }
-        });
-
-        while (!isReturn) {
-            deasync.runLoopOnce();
-        }
-
-        return renderData;
-    },
+    //事故类型饼图
+    // getAccidentTypeChart: function (report) {
+    //     var renderData = {}, isReturn = false;
+    //     var param = {
+    //         "date": {
+    //             "startDate": report.startDate,
+    //             "endDate": report.endDate
+    //         },
+    //         "page": {
+    //             "orders": [{
+    //                 "direction": "DESC",
+    //                 "orderBy": "count"
+    //             }],
+    //             "page": 1
+    //         },
+    //         "types": [
+    //             "atype"
+    //         ]
+    //     };
+    //
+    //     var urlPath = url.webserviceUrl + '/accident/aggByTypes';
+    //     request({
+    //         url: urlPath,
+    //         method: "post",
+    //         json: true,
+    //         headers: headers.getRequestHeader(),
+    //         body: param
+    //     }, function (error, response, data) {
+    //         if (!error && response.statusCode == 200) {
+    //             console.log('getAccidentTypeChart http request return!');
+    //             isReturn = true;
+    //
+    //             var total = 0, seriesData = [], description = '';
+    //             if (data.length > 0) {
+    //                 // 拼装 chart option
+    //                 for (var item of data) {
+    //                     var node = {};
+    //                     node.name = item.id;
+    //                     node.value = item.count;
+    //                     seriesData.push(node);
+    //                     total += item.count;
+    //                 }
+    //             }
+    //             var option = {
+    //                 tooltip: {
+    //                     trigger: 'item',
+    //                     formatter: "{a} <br/>{b}: {c} ({d}%)"
+    //                 },
+    //                 legend: {},
+    //                 series: [
+    //                     {
+    //                         name: '事故类型',
+    //                         type: 'pie',
+    //                         radius: ['0%', '55%'],
+    //                         label: {
+    //                             normal: {
+    //                                 show: true,
+    //                                 textStyle: {
+    //                                     fontSize: 20
+    //                                 }
+    //                             }
+    //                         },
+    //                         data: seriesData,
+    //                         itemStyle: {
+    //                             normal: {
+    //                                 color: function (params) {
+    //                                     // build a color map as your need.
+    //                                     var colorList = [
+    //                                         '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
+    //                                         '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
+    //                                         '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
+    //                                     ];
+    //                                     return colorList[params.dataIndex % 15]
+    //                                 }
+    //                             }
+    //                         }
+    //                     }
+    //                 ]
+    //             };
+    //             if (data.length > 0) {
+    //                 var itemStr = "";
+    //                 seriesData.forEach(function (item, i) {
+    //                     if (i < 5) {
+    //                         itemStr += "<span class='describe-redText'>" + item.name + "(" + (item.value * 100 / total).toFixed(2) + "%)</span>、";
+    //                     }
+    //                 });
+    //                 itemStr = itemStr.substring(0, itemStr.length - 1) + "。";
+    //                 description = "<div class='describe-text'>从本月安全生产事故类型来看，多发事故的类型为" + itemStr + "</div>";
+    //             } else {
+    //                 description = "";
+    //             }
+    //             renderData.option = option;
+    //             renderData.description = description;
+    //         } else {
+    //             console.log("get getAccidentTypeChart data error");
+    //         }
+    //     });
+    //
+    //     while (!isReturn) {
+    //         deasync.runLoopOnce();
+    //     }
+    //
+    //     return renderData;
+    // },
 
 // 事故地图分布情况
-    getAccidentMapChart: function (report) {
-        var renderData = {}, isReturn = false;
-        var param = {
-            "date": {
-                "startDate": report.startDate,
-                "endDate": report.endDate,
-            },
-            "page": {
-                "limit": 40,
-                "orders": [{
-                    "direction": "DESC",
-                    "orderBy": "count"
-                }],
-                "page": 1
-            },
-            "types": [
-                "province"
-            ]
-        };
-
-        var urlPath = url.webserviceUrl + '/accident/aggByTypes';
-        request({
-            url: urlPath,
-            method: "post",
-            json: true,
-            headers: headers.getRequestHeader(),
-            body: param
-        }, function (error, response, data) {
-            if (!error && response.statusCode == 200) {
-                console.log('getAccidentMapChart http request return!');
-                isReturn = true;
-
-                var total = 0, maxCount = 10, seriesData = [], description = '';
-                // 拼装 chart option
-                if (data.length > 0) {
-                    for (var item of data) {
-                        total += item.count;
-                        var node = {};
-                        node.name = item.id;
-                        node.value = item.count;
-                        seriesData.push(node);
-                    }
-                    seriesData.sort(function (a, b) {
-                        return b.value - a.value
-                    });
-                    if (seriesData.length > 0) {
-                        maxCount = seriesData[0].value == undefined ? 10 : seriesData[0].value;
-                    }
-                }
-
-                var option = {
-                    tooltip: {
-                        trigger: 'item',
-                        formatter: "{a} <br/>{b}: {c}"
-                    },
-                    visualMap: {
-                        min: 0,
-                        max: maxCount,
-                        left: 'left',
-                        top: 'bottom',
-                        text: ['高', '低'],           // 文本，默认为数值文本
-                        calculable: true
-                    },
-                    series: [
-                        {
-                            name: '事故起数',
-                            type: 'map',
-                            mapType: 'china',
-                            label: {
-                                normal: {
-                                    show: true,
-                                }
-                            },
-                            data: seriesData
-                        }
-                    ]
-                };
-
-                if (data.length > 0) {
-                    // make ArticleTypeChart description
-                    var itemsStr = "";
-                    data.forEach(function (item, i) {
-                        if (i < 6) {
-                            itemsStr += "<span class='describe-redText'>" + item.id + item.count + "(" + (item.count * 100 / total).toFixed(2) + "%)</span>、";
-                        }
-                    });
-                    itemsStr = itemsStr.substring(0, itemsStr.length - 1) + "。";
-
-                    description = "<div class='describe-text'>根据互联网抓取的数据，对本月事故情况进行分析，共发生事故<span class='describe-redText'>" + total + "</span>起，其中发生较多的省份为" + itemsStr + "</div>";
-                } else {
-                    description = "暂无相关数据";
-                }
-                renderData.option = option;
-                renderData.description = description;
-            } else {
-                console.log("get getAccidentMapChart data error");
-            }
-        });
-
-        while (!isReturn) {
-            deasync.runLoopOnce();
-        }
-
-        return renderData;
-    },
+//     getAccidentMapChart: function (report) {
+//         var renderData = {}, isReturn = false;
+//         var param = {
+//             "date": {
+//                 "startDate": report.startDate,
+//                 "endDate": report.endDate,
+//             },
+//             "page": {
+//                 "limit": 40,
+//                 "orders": [{
+//                     "direction": "DESC",
+//                     "orderBy": "count"
+//                 }],
+//                 "page": 1
+//             },
+//             "types": [
+//                 "province"
+//             ]
+//         };
+//
+//         var urlPath = url.webserviceUrl + '/accident/aggByTypes';
+//         request({
+//             url: urlPath,
+//             method: "post",
+//             json: true,
+//             headers: headers.getRequestHeader(),
+//             body: param
+//         }, function (error, response, data) {
+//             if (!error && response.statusCode == 200) {
+//                 console.log('getAccidentMapChart http request return!');
+//                 isReturn = true;
+//
+//                 var total = 0, maxCount = 10, seriesData = [], description = '';
+//                 // 拼装 chart option
+//                 if (data.length > 0) {
+//                     for (var item of data) {
+//                         total += item.count;
+//                         var node = {};
+//                         node.name = item.id;
+//                         node.value = item.count;
+//                         seriesData.push(node);
+//                     }
+//                     seriesData.sort(function (a, b) {
+//                         return b.value - a.value
+//                     });
+//                     if (seriesData.length > 0) {
+//                         maxCount = seriesData[0].value == undefined ? 10 : seriesData[0].value;
+//                     }
+//                 }
+//
+//                 var option = {
+//                     tooltip: {
+//                         trigger: 'item',
+//                         formatter: "{a} <br/>{b}: {c}"
+//                     },
+//                     visualMap: {
+//                         min: 0,
+//                         max: maxCount,
+//                         left: 'left',
+//                         top: 'bottom',
+//                         text: ['高', '低'],           // 文本，默认为数值文本
+//                         calculable: true
+//                     },
+//                     series: [
+//                         {
+//                             name: '事故起数',
+//                             type: 'map',
+//                             mapType: 'china',
+//                             label: {
+//                                 normal: {
+//                                     show: true,
+//                                 }
+//                             },
+//                             data: seriesData
+//                         }
+//                     ]
+//                 };
+//
+//                 if (data.length > 0) {
+//                     // make ArticleTypeChart description
+//                     var itemsStr = "";
+//                     data.forEach(function (item, i) {
+//                         if (i < 6) {
+//                             itemsStr += "<span class='describe-redText'>" + item.id + item.count + "(" + (item.count * 100 / total).toFixed(2) + "%)</span>、";
+//                         }
+//                     });
+//                     itemsStr = itemsStr.substring(0, itemsStr.length - 1) + "。";
+//
+//                     description = "<div class='describe-text'>根据互联网抓取的数据，对本月事故情况进行分析，共发生事故<span class='describe-redText'>" + total + "</span>起，其中发生较多的省份为" + itemsStr + "</div>";
+//                 } else {
+//                     description = "暂无相关数据";
+//                 }
+//                 renderData.option = option;
+//                 renderData.description = description;
+//             } else {
+//                 console.log("get getAccidentMapChart data error");
+//             }
+//         });
+//
+//         while (!isReturn) {
+//             deasync.runLoopOnce();
+//         }
+//
+//         return renderData;
+//     },
 
 //相关评论
 // getCommentPieChart: function (report) {
@@ -1389,70 +1449,70 @@ const actions = {
 //     return renderData;
 // },
 
-// 相关品论关键词云
-    getCommentHotKeywordsChart: function (report) {
-        var renderData = {}, isReturn = false;
-        var param = {
-            limit: 50,
-            mustWord: report.mustWord,
-            mustNotWord: report.mustNotWord,
-            shouldWord: report.shouldWord,
-            s_date: report.startDate,
-            e_date: report.endDate,
-        };
-
-        var urlPath = url.webserviceUrl + '/es/hotWords.json?' + querystring.stringify(param);
-        console.log("getCommentHotKeywordsChart", urlPath);
-        request({
-            url: urlPath,
-            method: "get",
-            json: true,
-            headers: headers.getRequestHeader()
-        }, function (error, response, data) {
-            if (!error && response.statusCode == 200) {
-                console.log('getCommentHotKeywordsChart http request return!');
-                isReturn = true;
-                var description = '';
-                if (data.length > 0) {
-                    var keywords = [];
-                    for (var item of data) {
-                        var keyword = {};
-                        keyword.keyword = item.key;
-                        keyword.score = item.value;
-                        keywords.push(keyword);
-                    }
-                }
-                var option = {
-                    data: keywords
-                };
-
-                if (data.length > 0) {
-                    var itemStr = "";
-                    data.forEach(function (item, i) {
-                        if (i < 5) {
-                            itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")" + "</span>、";
-                        }
-                    });
-
-                    itemStr = itemStr.substring(0, itemStr.length - 1);
-
-                    description = "<div class='describe-text'>根据互联网抓取的数据，热点关键词词频较高的是" + itemStr + "等。</div>";
-                } else {
-                    description = "暂无相关数据";
-                }
-                renderData.option = option;
-                renderData.description = description;
-            } else {
-                console.log("get getArticleHotKeywordsChart data error");
-            }
-        });
-
-        while (!isReturn) {
-            deasync.runLoopOnce();
-        }
-
-        return renderData;
-    }
+    // 相关品论关键词云
+    // getCommentHotKeywordsChart: function (report) {
+    //     var renderData = {}, isReturn = false;
+    //     var param = {
+    //         limit: 50,
+    //         mustWord: report.mustWord,
+    //         mustNotWord: report.mustNotWord,
+    //         shouldWord: report.shouldWord,
+    //         s_date: report.startDate,
+    //         e_date: report.endDate,
+    //     };
+    //
+    //     var urlPath = url.webserviceUrl + '/es/hotWords.json?' + querystring.stringify(param);
+    //     console.log("getCommentHotKeywordsChart", urlPath);
+    //     request({
+    //         url: urlPath,
+    //         method: "get",
+    //         json: true,
+    //         headers: headers.getRequestHeader()
+    //     }, function (error, response, data) {
+    //         if (!error && response.statusCode == 200) {
+    //             console.log('getCommentHotKeywordsChart http request return!');
+    //             isReturn = true;
+    //             var description = '';
+    //             if (data.length > 0) {
+    //                 var keywords = [];
+    //                 for (var item of data) {
+    //                     var keyword = {};
+    //                     keyword.keyword = item.key;
+    //                     keyword.score = item.value;
+    //                     keywords.push(keyword);
+    //                 }
+    //             }
+    //             var option = {
+    //                 data: keywords
+    //             };
+    //
+    //             if (data.length > 0) {
+    //                 var itemStr = "";
+    //                 data.forEach(function (item, i) {
+    //                     if (i < 5) {
+    //                         itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")" + "</span>、";
+    //                     }
+    //                 });
+    //
+    //                 itemStr = itemStr.substring(0, itemStr.length - 1);
+    //
+    //                 description = "<div class='describe-text'>根据互联网抓取的数据，热点关键词词频较高的是" + itemStr + "等。</div>";
+    //             } else {
+    //                 description = "暂无相关数据";
+    //             }
+    //             renderData.option = option;
+    //             renderData.description = description;
+    //         } else {
+    //             console.log("get getArticleHotKeywordsChart data error");
+    //         }
+    //     });
+    //
+    //     while (!isReturn) {
+    //         deasync.runLoopOnce();
+    //     }
+    //
+    //     return renderData;
+    // }
 };
 
 module.exports = actions;

@@ -21,16 +21,6 @@
             "method": "getArticleTypeChart"
         },{
             "level": "level-two",
-            "title": "事故相关区域分析",
-            "imageUrl": "",
-            "option": {},
-            "children": [],
-            "description": "",
-            "chartType": "bar",
-            "chartId": "accident-area-chart",
-            "method": "getAccidentAreaChart"
-        },{
-            "level": "level-two",
             "title": "(一) 安全生产與情趋势",
             "imageUrl": "",
             "option": {},
@@ -84,49 +74,6 @@
             "chartType": "keywordsCloud",
             "chartId": "hot-keywords-chart",
             "method": "getArticleHotKeywordsChart"
-        }]
-    }, {
-        "level": "level-one",
-        "title": "二、安全生产事故聚焦",
-        "children": [{
-            "level": "level-two",
-            "title": "1. 事故分析",
-            "imageUrl": "",
-            "children": [{
-                "level": "level-three",
-                "title": "事故类型分布图",
-                "imageUrl": "",
-                "option": {},
-                "description": "",
-                "children": [],
-                "chartType": "pie",
-                "chartId": "accident-type-pie-chart",
-                "method": "getAccidentTypeChart"
-            },{
-                "level": "level-three",
-                "title": "事故地域分布图",
-                "imageUrl": "",
-                "option": {},
-                "description": "",
-                "children": [],
-                "chartType": "map",
-                "chartId": "accident-map-chart",
-                "method": "getAccidentMapChart"
-            }]
-        },{
-            "level": "level-two",
-            "title": "2. 相关言论分析",
-            "imageUrl": "",
-            "children": [{
-                "level": "level-three",
-                "title": "事故相关言论关键词词云",
-                "imageUrl": "",
-                "description": "",
-                "children": [],
-                "chartType": "keywordsCloud",
-                "chartId": "comment-keywords-chart",
-                "method": "getCommentHotKeywordsChart"
-            }]
         }]
     }],
     "summary": ""

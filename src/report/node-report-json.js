@@ -58,6 +58,8 @@ exports.getBriefingJson = function () {
             var briefingBuilder = builder.briefingBuilder;
             briefing = briefingBuilder.briefing;
 
+            console.log("get briefing content success");
+
             if (param.type === "MONTHLY") {
                 briefing.type = "MONTHLY";
             } else if (param.type === "SPECIAL") {

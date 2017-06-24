@@ -1,46 +1,9 @@
 {
-  "dateCreated": 1496978624000,
-  "dateModified": 1497233915000,
-  "deleted": false,
-  "id": 66,
-  "userId": 100,
-  "state": "CREATING",
-  "mustWord": "事故",
-  "shouldWord": "瓦斯",
-  "mustNotWord": null,
-  "startDate": 1493568000000,
-  "endDate": 1498752000000,
-  "name": "煤矿事故",
-  "description": "煤矿",
-  "warning": {
-    "contacts": [
-      {
-        "dateCreated": 1496914483000,
-        "dateModified": 1496914483000,
-        "deleted": false,
-        "id": 6,
-        "name": "shaol",
-        "type": "EMAIL",
-        "account": "812690341@qq.com",
-        "userId": 100
-      }
-    ],
-    "receiveStartTime": 0,
-    "receiveEndTime": 4,
-    "hours": 1,
-    "atWeekends": false,
-    "sentimentLabel": [
-      "POS",
-      "NEG",
-      "NEU"
-    ],
-    "type": [
-      "news",
-      "weibo",
-      "bbs",
-      "bar"
-    ],
-    "briefingType": "SPECIAL"
-  },
-  "enableWarning": true
+  "name": "测试",
+  "mustWord": "测试",
+  "shouldWord": "",
+  "mustNotWord": "",
+  "startDate": 1496246400000,
+  "endDate": 1498147200000,
+  "description": ""
 }

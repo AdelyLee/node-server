@@ -45,6 +45,35 @@ const utils = {
         }
 
         return type;
+    },
+
+    resetDate: function (dateNum) {
+        var date = '';
+        switch (dateNum) {
+            case 1:
+                date = '星期一';
+                break;
+            case 2:
+                date = '星期二';
+                break;
+            case 3:
+                date = '星期三';
+                break;
+            case 4:
+                date = '星期四';
+                break;
+            case 5:
+                date = '星期五';
+                break;
+            case 6:
+                date = '星期六';
+                break;
+            case 0:
+                date = '星期日';
+                break;
+        }
+
+        return date;
     }
 };
 
