@@ -1,9 +1,58 @@
 {
-  "name": "测试",
-  "mustWord": "测试",
-  "shouldWord": "",
+  "dateCreated": 1497513386000,
+  "dateModified": 1498140157000,
+  "deleted": false,
+  "id": 71,
+  "userId": 1,
+  "state": "COMPLETED",
+  "mustWord": "煤矿",
+  "shouldWord": "事故",
   "mustNotWord": "",
-  "startDate": 1496246400000,
-  "endDate": 1498147200000,
-  "description": ""
+  "startDate": 1496073600000,
+  "endDate": 1498579200000,
+  "name": "煤矿",
+  "description": "",
+  "warning": {
+    "dateCreated": 1497836749000,
+    "dateModified": 1498140157000,
+    "deleted": false,
+    "id": 10,
+    "cronExpression": {
+      "atWeekends": false,
+      "second": "0",
+      "minute": "0",
+      "hour": "0",
+      "day": "*",
+      "month": "*",
+      "week": "?",
+      "year": "*",
+      "type": null
+    },
+    "enable": false,
+    "hours": 1,
+    "day": null,
+    "briefingType": "SPECIAL",
+    "cron": "0 0 9-21/1 ? * MON-FRI",
+    "userId": 1,
+    "sentimentLabel": [
+      "POS",
+      "NEG",
+      "NEU"
+    ],
+    "type": [
+      "news",
+      "weibo",
+      "bbs",
+      "bar"
+    ],
+    "receiveStartTime": 9,
+    "receiveEndTime": 21,
+    "atWeekends": true,
+    "lastWarningDate": null,
+    "contacts": []
+  },
+  "enableWarning": true,
+  "startFormatDate": "2017-05-30",
+  "endFormatDate": "2017-06-28",
+  "estimate": 1195
 }

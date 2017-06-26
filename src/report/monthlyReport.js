@@ -17,10 +17,10 @@ const actions = {
         var title = '', reportTime = '';
         if (report.type == 'MONTHLY') {
             reportTime = dateUtil.formatDate(dateUtil.parseDate(report.startDate), 'yyyy年MM月');
-            title = '月报－' + reportTime;
+            title = '月报' + reportTime;
         } else if (report.type == 'WEEKLY') {
             reportTime = dateUtil.formatDate(dateUtil.parseDate(report.startDate), 'yyyy年MM月dd日');
-            title = '周报－' + reportTime;
+            title = '周报' + reportTime;
         }
 
         return title;
@@ -106,8 +106,8 @@ const actions = {
                 keywords = keywords.substring(0, keywords.length);
 
                 var itemStr = "", itemCompareLast = '';
-                if (data.maxSite.length > 0) {
-                    data.maxSite.forEach(function (item) {
+                if (data.maxType.length > 0) {
+                    data.maxType.forEach(function (item) {
                         data.compare.forEach(function (obj) {
                             if (item.key === obj.key) {
                                 if (obj.value > 0) {
@@ -119,13 +119,24 @@ const actions = {
                                     + "（" + item.value + '）</span>条,同比上' + time + "<span class='describe-redText'>" + itemCompareLast + "</span>，";
                             }
                         });
-                    })
+                    });
 
                     itemStr = itemStr.substring(0, itemStr.length - 1);
                 }
+
+                var siteStr = "";
+                if (data.maxSite.length > 0) {
+                    siteStr = "其中较为活跃的站点有";
+                    data.maxSite.forEach(function (item) {
+                        siteStr += "<span class='describe-redText'>" + item.key + "（" + item.value + "）</span>条，";
+                    });
+                    siteStr = siteStr.substring(0, siteStr.length - 1);
+                }
+
                 outline = "<div class='describe-text'>本" + time + "共抓取数据<span class='describe-redText'>" + total +
                     "</span>条，同比上" + time + "<span class='describe-redText'>" + compareLast
-                    + "</span>，本" + time + "共抓取<span class='describe-redText'>" + keywords + "</span>相关" + itemStr + "。</div>";
+                    + "</span>，本" + time + "共抓取<span class='describe-redText'>" + keywords + "</span>相关"
+                    + itemStr + "，" + siteStr +"</div>";
             }
         });
         while (!isReturn) {
