@@ -106,7 +106,7 @@ const actions = {
                 keywords = keywords.substring(0, keywords.length);
 
                 var itemStr = "", itemCompareLast = '';
-                if (data.maxType.length > 0) {
+                if (data.maxType && data.maxType.length > 0) {
                     data.maxType.forEach(function (item) {
                         data.compare.forEach(function (obj) {
                             if (item.key === obj.key) {
@@ -125,7 +125,7 @@ const actions = {
                 }
 
                 var siteStr = "";
-                if (data.maxSite.length > 0) {
+                if (data.maxSite && data.maxSite.length > 0) {
                     siteStr = "其中较为活跃的站点有";
                     data.maxSite.forEach(function (item) {
                         siteStr += "<span class='describe-redText'>" + item.key + "（" + item.value + "）</span>条，";
@@ -136,7 +136,7 @@ const actions = {
                 outline = "<div class='describe-text'>本" + time + "共抓取数据<span class='describe-redText'>" + total +
                     "</span>条，同比上" + time + "<span class='describe-redText'>" + compareLast
                     + "</span>，本" + time + "共抓取<span class='describe-redText'>" + keywords + "</span>相关"
-                    + itemStr + "，" + siteStr +"</div>";
+                    + itemStr + "，" + siteStr + "</div>";
             }
         });
         while (!isReturn) {
