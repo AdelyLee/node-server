@@ -70,21 +70,26 @@ exports.getBriefingJson = function () {
 
             // 获取报告 title, outline, summary, author, createTime, issue 信息．
             briefing.title = service.getBriefingTitle(param);
-            briefing.subTitle = service.getBriefingSubTitle(param);
-            briefing.issue = service.getBriefingIssue(param);
-            briefing.author = service.getBriefingAuthor(param);
-            briefing.createTime = service.getBriefingCreateTime(param);
+            // briefing.subTitle = service.getBriefingSubTitle(param);
+            // briefing.issue = service.getBriefingIssue(param);
+            // briefing.author = service.getBriefingAuthor(param);
+            // briefing.createTime = service.getBriefingCreateTime(param);
             briefing.outline = service.getBriefingOutline(param);
             briefing.summary = service.getBriefingSummary(param);
-
+            console.log("get outline success");
         }
     });
 
     while (!isReturn) {
         deasync.runLoopOnce();
     }
-
-    return JSON.stringify(briefing);
+    // 此处将对象转换为json需要支持function的转换
+    return JSON.stringify(briefing, function (key, val) {
+        if (typeof val === 'function') {
+            return val + '';
+        }
+        return val;
+    });
 };
 
 function mikeBriefing(briefingObj) {
@@ -114,7 +119,7 @@ function mikeBriefingCell(briefingCellObj) {
         var projectPath = process.cwd();
         // Canvas.registerFont(path.join(projectPath + '/static/font', "msyh.ttf"), { family: "微软雅黑"});
         var file = projectPath + "/static/images/" + briefingCellObj.chartId + '.png';
-        if (briefingCellObj.chartType && briefingCellObj.chartType != '' && briefingCellObj.chartType != 'keywordsCloud') {
+        if (briefingCellObj.chartType && briefingCellObj.chartType != '' && briefingCellObj.chartType != 'table' && briefingCellObj.chartType != 'keywordsCloud') {
             node_charts.renderEcharts({
                 canvas: Canvas,
                 font: '14px 微软雅黑',
@@ -132,7 +137,7 @@ function mikeBriefingCell(briefingCellObj) {
             });
         }
 
-        if (briefingCellObj.chartType && briefingCellObj.chartType != '') {
+        if (briefingCellObj.chartType && briefingCellObj.chartType != 'table') {
             // get the image switch to base64
             briefingCellObj.imageUrl = base64_encode(file);
         }

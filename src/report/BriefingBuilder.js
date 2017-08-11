@@ -27,10 +27,6 @@ const briefingBuilder = {
         this.briefing.author = author;
     },
 
-    buildCreateTime: function (createTime) {
-        this.briefing.createTime = createTime;
-    },
-
     buildOutline: function (outline) {
         this.briefing.outline = outline;
     },
@@ -61,7 +57,6 @@ const briefingDirector = {
         briefingBuilder.buildTitle(briefing.title);
         briefingBuilder.buildSubTitle(briefing.subTitle);
         briefingBuilder.buildAuthor(briefing.author);
-        briefingBuilder.buildCreateTime(briefing.createTime);
         briefingBuilder.buildOutline(briefing.outline);
         briefingBuilder.buildIssue(briefing.issue);
         briefingBuilder.buildBriefingBody(briefing.briefingBody);

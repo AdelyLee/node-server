@@ -11,11 +11,12 @@ var deasync = require('deasync');
 var dateUtil = require('../DateUtil.js');
 var descriptionUtil = require('./descriptionUtil.js');
 var headers = require('../headerUtil');
+var chartOption = require('../options/chart-options')
 
 const actions = {
     // 专报标题
     getBriefingTitle: function (report) {
-        return report.name + '专报';
+        return report.name;
     },
     // 专报子标题
     getBriefingSubTitle: function (report) {
@@ -24,35 +25,6 @@ const actions = {
     // 专报期号
     getBriefingIssue: function (report) {
         return "";
-    },
-
-    // 专报作者
-    getBriefingAuthor: function (report) {
-        var author = "", isReturn = false;
-        var userId = report.userId;
-        var urlPath = url.webserviceUrl + '/admin/user/' + userId;
-
-        request({
-            url: urlPath,
-            method: "get",
-            json: true,
-            headers: headers.getRequestHeader()
-        }, function (error, response, data) {
-            if (!error && response.statusCode == 200) {
-                isReturn = true;
-                author = data.username;
-            }
-        });
-        while (!isReturn) {
-            deasync.runLoopOnce();
-        }
-
-        return author;
-    },
-
-    // 专报创建时间
-    getBriefingCreateTime: function () {
-        return dateUtil.formatDate(new Date(), "yyyy年MM月dd日");
     },
 
     // 专报概述
@@ -90,19 +62,32 @@ const actions = {
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 isReturn = true;
-
+                var keywords = '', mustWordArray = [], shouldWordArray = [];
+                if (report.mustWord) {
+                    mustWordArray = report.mustWord.split('@');
+                }
+                if (report.shouldWord) {
+                    shouldWordArray = report.shouldWord.split('@');
+                }
+                if (mustWordArray.length > 2) {
+                    mustWordArray = mustWordArray.slice(0, 2);
+                }
+                if (shouldWordArray.length > 2) {
+                    shouldWordArray = shouldWordArray.slice(0, 2);
+                }
+                keywords = mustWordArray.join('、') + '、' + shouldWordArray.join('、');
+                keywords = keywords.substring(0, keywords.length);
                 var total = 0;
                 if (data.monthCount > 0) {
                     total = data.monthCount;
                 }
-                var typeItemStr = "", siteItemStr = "", titleItemStr = "";
+                var typeItemStr = "", siteItemStr = "", titleItemStr = "", emotionItemStr = "";
                 if (data.maxType.length > 0) {
                     data.maxType.forEach(function (item, i) {
                         if (i < 3) {
                             typeItemStr += "<span class='describe-redText'>" + utils.resetArticleTypeName(item.key) + "（"
                                 + item.value + "）</span>条、";
                         }
-
                     })
                 }
                 typeItemStr = typeItemStr.substring(0, typeItemStr.length - 1);
@@ -118,17 +103,22 @@ const actions = {
                 if (data.maxTitle.length > 0) {
                     data.maxTitle.forEach(function (item, i) {
                         if (i < 3) {
-                            titleItemStr += "<span class='describe-redText'>“" + item.key + "”（"
-                                + item.value + "）</span>条、";
+                            titleItemStr += "以<span class='describe-redText'>“" + item.key + "”</span>标题的报道具有（"
+                                + item.value + "）条、";
                         }
                     })
                 }
                 titleItemStr = titleItemStr.substring(0, titleItemStr.length - 1);
-
-                description = "<div class='describe-text'>从<span class='describe-redText'>" + report.startDate + "</span>至<span class='describe-redText'>"
-                    + report.endDate + "</span>共抓取<span class='describe-redText'>" + report.name +
-                    "</span>专题相关数据<span class='describe-redText'>" + total + "</span>条，其中" + typeItemStr
-                    + "</span>，相对活跃的平台为" + siteItemStr + "，以下新闻传播较为广泛，" + titleItemStr + "。</div>";
+                if (data.label.length > 0) {
+                    data.label.forEach(function (item, i) {
+                        emotionItemStr += "<span class='describe-redText'>" + utils.resetEmotionTypeName(item.key) + "</span>报道具有<span class='describe-redText'>（"
+                            + item.value + "）</span>条，所占比例为<span class='describe-redText'>" + (item.value * 100 / total).toFixed(2) + "%</span>;";
+                    })
+                }
+                emotionItemStr = emotionItemStr.substring(0, emotionItemStr.length - 1);
+                description = "<div class='describe-text'><div class='paragraph'>根据以<span class='describe-redText'>“" + keywords + "”</span>等关键字的进行互联网监控，从<span class='describe-redText'>" + report.startDate + "</span>至<span class='describe-redText'>"
+                    + report.endDate + "</span>，对以<span class='describe-redText'>“" + report.name + "”</span>为主题进行数据爬取，监控发现对该主题进行报道具有<span class='describe-redText'>" + total + "</span>条，其中包含" + typeItemStr
+                    + "</span>。根据报道数量排序，对该主题报道最多的为" + siteItemStr + "。</div><div class='paragraph'>对该主题，媒体采用不同的标题方式进行报道，包括" + titleItemStr + "。</div><div class='paragraph'>通过对以上所有报道进行正负面舆情分析，其中" + emotionItemStr + "。</div></div>";
 
             }
         });
@@ -203,11 +193,11 @@ const actions = {
                     var itemsStr = "";
                     seriesData.forEach(function (item, i) {
                         if (i < 3) {
-                            itemsStr += "<span class='describe-redText'>" + item.name + item.value + "(" + (item.value * 100 / total).toFixed(2) + "%)</span>、";
+                            itemsStr += "<span class='describe-redText'>" + item.name + "</span>类媒体发现报道了<span class='describe-redText'>" + item.value + "</span>次，所占比例<span class='describe-redText'>" + (item.value * 100 / total).toFixed(2) + "%</span>；";
                         }
                     });
                     itemsStr = itemsStr.substring(0, itemsStr.length - 1) + "。";
-                    description = "<div class='describe-text'>根据互联网抓取的数据，对数据载体进行分析，共抓取数据<span class='describe-redText'>" + total + "</span>条，其中排名前三的为" + itemsStr + "</div>";
+                    description = "<div class='describe-text'>根据互联网实时监控的所有抓取的数据按媒体报道载体分析，一共具有媒体报道<span class='describe-redText'>" + total + "</span>次，" + itemsStr + "</div>";
                 } else {
                     description = "暂无相关数据";
                 }
@@ -232,10 +222,11 @@ const actions = {
             mustNotWord: report.mustNotWord,
             shouldWord: report.shouldWord,
             s_date: report.startDate,
-            e_date: report.endDate
+            e_date: report.endDate,
+            articleType: 'news'
         };
 
-        var urlPath = url.webserviceUrl + '/news/filterAndGroupBy.json?' + querystring.stringify(param);
+        var urlPath = url.webserviceUrl + '/es/filterAndGroupBy.json?' + querystring.stringify(param);
         request({
             url: urlPath,
             method: "get",
@@ -246,78 +237,40 @@ const actions = {
                 console.log('getMediaBarChart http request return!');
                 isReturn = true;
 
-                var seriesData = [], xAxisData = [], description = '';
-                if (data.length > 0) {
-                    data = data.sort(function (a, b) {
-                        return b.value - a.value;
-                    });
-                    for (var item of data) {
-                        var node = {};
-                        node.name = item.key;
-                        node.value = item.value;
-                        seriesData.push(node);
-                        xAxisData.push(item.key);
-                    }
+                var description = '';
+                var renderDataTemp = []
+                var chartConfig = {
+                    legendData: { show: false },
+                    gridData: { top: 10, bottom: 60 },
+                    xAxisData: { type: 'category', axisLabel: { rotate: 45, textStyle: { fontWeight: 700, fontSize: 18 } } },
+                    yAxisData: { type: 'value', axisLabel: { textStyle: { fontWeight: 700, fontSize: 18 } } }
                 }
-                var option = {
-                    legend: {},
-                    grid: {
-                        bottom: 120
-                    },
-                    yAxis: {
-                        axisLabel: {
-                            textStyle: {
-                                fontWeight: 700,
-                                fontSize: 18
-                            }
-                        }
-
-                    },
-                    xAxis: {
-                        data: xAxisData,
-                        axisLabel: {
-                            interval: 0,
-                            rotate: 35,
-                            textStyle: {
-                                fontWeight: 700,
-                                fontSize: 18
-                            }
-                        }
-                    },
-                    series: [
-                        {
-                            name: '媒体名称',
-                            type: 'bar',
-                            data: seriesData,
-                            barMaxWidth: 45,
-                            itemStyle: {
-                                normal: {
-                                    color: function (params) {
-                                        // build a color map as your need.
-                                        var colorList = [
-                                            '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
-                                            '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
-                                            '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
-                                        ];
-                                        return colorList[params.dataIndex % 15]
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                };
+                var renderItem = { data: [] }
+                renderItem.name = '媒体名称'
+                if (data.length > 0) {
+                    data.forEach(function (item) {
+                        var node = {};
+                        node.name = item.key
+                        node.value = item.value
+                        renderItem.data.push(node)
+                    })
+                }
+                renderDataTemp.push(renderItem)
+                var option = chartOption.barChartOption.getOption(renderDataTemp, chartConfig)
+                // 将对象转为json格式，在此处设置labelLength, option为json
+                option = utils.replaceLabelLength(option, 8);
 
                 if (data.length > 0) {
                     var itemStr = "";
-                    seriesData.forEach(function (item, i) {
+                    data.forEach(function (item, i) {
                         if (i < 4) {
-                            itemStr += "<span class='describe-redText'>" + item.name + "(" + item.value + ")" + "</span>、";
+                            itemStr += "<span class='describe-redText'>" + item.key + "(" + item.value + ")" + "</span>、";
                         }
                     });
 
                     itemStr = itemStr.substring(0, itemStr.length - 1);
 
-                    description = "<div class='describe-text'>根据互联网抓取的数据，主流媒体报道较多的是" + itemStr + "等。</div>";
+                    description = "<div class='describe-text'>上图反映了主流媒体对<span class='describe-redText'>”" + report.name + "“</span>该主题进行报道（或者转载）的一个排行榜，关注和报道该活动最多的分别为" + itemStr + "等。</div>";
                 } else {
                     description = "暂无相关数据";
                 }
@@ -384,6 +337,7 @@ const actions = {
                 }
 
                 var option = {
+                    tooltip: { trigger: 'axis' },
                     legend: {
                         x: 'right',
                         y: 'middle',
@@ -432,13 +386,13 @@ const actions = {
                     var heightData = descriptionUtil.getHotArticle(report, hotStartDate, hotEndDate);
                     var heightStr = "";
                     if (heightData.key) {
-                        heightStr = '<span class="describe-redText">' + maxDate + '</span>日，<span class="describe-redText">＂' + heightData.key
-                            + '＂</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本月的舆情高峰。';
+                        heightStr = '<span class="describe-redText">在' + maxDate + '</span>日，<span class="describe-redText">“' + heightData.key
+                            + '”</span>话题产生<span class="describe-redText">' + heightData.value + '</span>篇相关报道，促使当日出现本月的舆情高峰，之后，媒体报道逐渐减少。';
                     }
 
                     // make ArticleTypeChart description
-                    description = '<div class="describe-text">根据最新舆情分析, 共抓取互联网数据'
-                        + '<span class="describe-redText">' + total + '</span>条，其中<span class="describe-redText">' + maxDate
+                    description = '<div class="describe-text">对所有报道的'
+                        + '<span class="describe-redText">' + total + '</span>条数据进行按时间段走势进行分析（按天），得出<span class="describe-redText">' + maxDate
                         + '</span>日热度最高，共有数据<span class="describe-redText">' + seriesData[indexOfMax] + '</span>条。'
                         + heightStr + '<span class="describe-redText">' + minDate
                         + '</span>日最低，共有数据<span class="describe-redText">' + seriesData[indexOfMin] + '</span>条。</div>';
@@ -461,105 +415,83 @@ const actions = {
 
     //　网民舆论热点
     getArticleHotPointChart: function (report) {
+        var titleMust = "";
+        titleMust = report.mustWord.split('@')[0];
         var renderData = {}, isReturn = false;
         var param = {
-            groupName: 'title.raw',
-            mustWord: report.mustWord,
-            mustNotWord: report.mustNotWord,
-            shouldWord: report.shouldWord,
-            s_date: report.startDate,
-            e_date: report.endDate
+            date: {
+                startDate: report.startDate,
+                endDate: report.endDate
+            },
+            filed: '',
+            keyword: {
+                mustWord: report.mustWord,
+                mustNotWord: report.mustNotWord,
+                shouldWord: report.shouldWord,
+            },
+            page: {
+                limit: 6,
+                page: 1
+            },
+            searchKv: [{
+                key: 'title.cn',
+                value: titleMust
+            }],
+            type: ['news']
         };
 
-        var urlPath = url.webserviceUrl + '/es/filterAndGroupBy.json?' + querystring.stringify(param);
+        var urlPath = url.webserviceUrl + '/es/titleTimeAxis';
         request({
             url: urlPath,
-            method: "get",
+            method: "post",
             json: true,
-            headers: headers.getRequestHeader()
+            headers: headers.getRequestHeader(),
+            body: param
         }, function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 console.log('getArticleHotPointChart http request return!');
                 isReturn = true;
-                var seriesData = [], yAxisData = [], description = '';
-                if (data.length > 0) {
-                    // 拼装 chart option
-                    if (data.length > 6) {
-                        data = data.slice(0, 6);
-                    }
-                    data = data.sort(function (a, b) {
-                        return a.value - b.value;
-                    });
-
-                    for (var item of data) {
-                        seriesData.push(item.value);
-                        if (item.key.length > 18) {
-                            item.key = item.key.substring(0, 18) + '...';
-                        }
-                        yAxisData.push(item.key);
-                    }
+                data = data.content;
+                data = data.reverse()
+                var description = '';
+                var renderDataTemp = []
+                var chartConfig = {
+                    labelLength: 20,
+                    legendData: { show: false },
+                    gridData: { top: 10, bottom: 20 },
+                    xAxisData: { type: 'value', axisLabel: { textStyle: { fontWeight: 700, fontSize: 20 } } },
+                    yAxisData: { type: 'category', axisLabel: { textStyle: { fontWeight: 700, fontSize: 20 } } }
                 }
-                var option = {
-                    yAxis: {
-                        type: 'category',
-                        data: yAxisData,
-                        axisLabel: {
-                            textStyle: {
-                                fontWeight: 700,
-                                fontSize: 18
-                            }
-                        }
-                    },
-                    grid: {
-                        left: '10',
-                        right: '30',
-                        bottom: '10',
-                        top: '10',
-                        containLabel: true
-                    },
-                    xAxis: {
-                        type: 'value',
-                        axisLabel: {
-                            textStyle: {
-                                fontWeight: 700,
-                                fontSize: 18
-                            }
-                        }
-                    },
-                    series: [
-                        {
-                            name: '舆论热点',
-                            type: 'bar',
-                            data: seriesData,
-                            itemStyle: {
-                                normal: {
-                                    color: function (params) {
-                                        // build a color map as your need.
-                                        var colorList = [
-                                            '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
-                                            '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
-                                            '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
-                                        ];
-                                        return colorList[params.dataIndex % 15]
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                };
+                var renderItem = { data: [] }
+                renderItem.name = '舆论热点'
+                if (data.length > 0) {
+                    data.forEach(function (item) {
+                        var node = {};
+                        node.name = item.title
+                        node.value = item.docTotal
+                        renderItem.data.push(node)
+                    })
+                }
+                renderDataTemp.push(renderItem)
+                var option = chartOption.barChartOption.getOption(renderDataTemp, chartConfig)
+                // 将对象转为json格式，在此处设置labelLength, option为json
+                option = utils.replaceLabelLength(option, 25);
+
                 if (data.length > 0) {
                     // make description
-                    var dataMonth = parseInt(param.s_date.split("-")[1]);
                     var itemStr = "";
                     data = data.reverse();
                     data.forEach(function (item, i) {
+                        if (item.title.length > 30) {
+                            item.title = item.title.substring(0, 30) + '...';
+                        }
                         if (i < 3) {
-                            itemStr += '<span class="describe-redText">“' + item.key + '” (' + item.value + ')</span>、';
+                            itemStr += '<span class="describe-redText">“' + item.title + '” （' + item.docTotal + '次）</span>、';
                         }
                     });
                     itemStr = itemStr.substring(0, itemStr.length - 1);
-                    description = '<div class="describe-text">' + dataMonth + '月份媒体报道情况，从其具体内容方面也可以发现，主要话题集中在'
-                        + itemStr + '等几个方面。</div>';
+                    description = '<div class="describe-text">针对该主题报道，从其具体内容方面也可以发现，舆论主要话题集中在'
+                        + itemStr + '方面的话题。</div>';
                 } else {
                     description = "暂无相关数据";
                 }
@@ -586,7 +518,8 @@ const actions = {
             mustNotWord: report.mustNotWord,
             shouldWord: report.shouldWord,
             s_date: report.startDate,
-            e_date: report.endDate
+            e_date: report.endDate,
+            articleType: 'weibo@bbs@bar'
         };
 
         var urlPath = url.webserviceUrl + '/es/filterAndGroupBy.json?' + querystring.stringify(param);
@@ -599,70 +532,29 @@ const actions = {
             if (!error && response.statusCode == 200) {
                 console.log('getHotAuthorChart http request return!');
                 isReturn = true;
-
-                var seriesData = [], xAxisData = [], description = '';
-                if (data.length > 0) {
-                    data = data.sort(function (a, b) {
-                        return b.value - a.value;
-                    });
-                    for (let item of data) {
-                        if (item.key && item.key !== "") {
-                            seriesData.push(item.value);
-                            if (item.key.length > 10) {
-                                item.key = item.key.substring(0, 10) + "...";
-                            }
-                            xAxisData.push(item.key);
-                        }
-                    }
+                var description = '';
+                var renderDataTemp = []
+                var chartConfig = {
+                    legendData: { show: false },
+                    gridData: { top: 10, bottom: 60 },
+                    xAxisData: { type: 'category', axisLabel: { rotate: 45, textStyle: { fontWeight: 700, fontSize: 18 } } },
+                    yAxisData: { type: 'value', axisLabel: { textStyle: { fontWeight: 700, fontSize: 18 } } }
                 }
-                var option = {
-                    grid: {
-                        left: 20,
-                        right: 30,
-                        bottom: 80,
-                        top: 20,
-                        containLabel: true
-                    },
-                    yAxis: {
-                        axisLabel: {
-                            textStyle: {
-                                fontWeight: 700,
-                                fontSize: 20
-                            }
-                        }
-                    },
-                    xAxis: {
-                        data: xAxisData,
-                        axisLabel: {
-                            interval: 0,
-                            rotate: 35,
-                            textStyle: {
-                                fontWeight: 700,
-                                fontSize: 20
-                            }
-                        }
-                    },
-                    series: [
-                        {
-                            name: '舆论热点',
-                            type: 'bar',
-                            data: seriesData,
-                            itemStyle: {
-                                normal: {
-                                    color: function (params) {
-                                        // build a color map as your need.
-                                        var colorList = [
-                                            '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
-                                            '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
-                                            '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
-                                        ];
-                                        return colorList[params.dataIndex % 15]
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                };
+                var renderItem = { data: [] }
+                renderItem.name = '热议网民'
+                if (data.length > 0) {
+                    data.forEach(function (item) {
+                        var node = {};
+                        node.name = item.key
+                        node.value = item.value
+                        renderItem.data.push(node)
+                    })
+                }
+                renderDataTemp.push(renderItem)
+                var option = chartOption.barChartOption.getOption(renderDataTemp, chartConfig)
+                // 将对象转为json格式，在此处设置labelLength, option为json
+                option = utils.replaceLabelLength(option, 8);
+
                 if (data.length > 0) {
                     var itemStr = "";
                     data.forEach(function (item, i) {
@@ -672,9 +564,8 @@ const actions = {
                     });
 
                     var length = data.length > 5 ? 5 : data.length;
-
                     itemStr = itemStr.substring(0, itemStr.length - 1);
-                    description = "<div class='describe-text'>参与话题讨论的网民中，讨论最为激烈的前<span class='describe-redText'>" + length + "</span>名网民分别为" + itemStr + "。</div>";
+                    description = "<div class='describe-text'>对该主题的监测过程中，在论坛的参与话题讨论的网民中，讨论最为激烈的前<span class='describe-redText'>" + length + "</span>名网民分别为" + itemStr + "。</div>";
                 } else {
                     description = "暂无相关数据";
                 }
@@ -830,7 +721,6 @@ const actions = {
                     });
 
                     itemStr = itemStr.substring(0, itemStr.length - 1);
-
                     description = "<div class='describe-text'>根据互联网抓取的数据，热点关键词词频较高的是" + itemStr + "等。</div>";
                 } else {
                     description = "暂无相关数据";
@@ -839,6 +729,83 @@ const actions = {
                 renderData.description = description;
             } else {
                 console.log("get getArticleHotKeywordsChart data error");
+            }
+        });
+
+        while (!isReturn) {
+            deasync.runLoopOnce();
+        }
+
+        return renderData;
+    },
+
+    // 获取推荐阅读文章
+    getSpecialRecommendArticles: function (report) {
+        var titleMust = "";
+        titleMust = report.mustWord.split('@')[0];
+        var renderData = {}, isReturn = false;
+        var param = {
+            date: {
+                startDate: report.startDate,
+                endDate: report.endDate
+            },
+            filed: '',
+            keyword: {
+                mustWord: report.mustWord,
+                mustNotWord: report.mustNotWord,
+                shouldWord: report.shouldWord,
+            },
+            page: {
+                limit: 4,
+                page: 1
+            },
+            searchKv: [{
+                key: 'title.cn',
+                value: titleMust
+            }],
+            type: ['news']
+        };
+
+        var urlPath = url.webserviceUrl + '/es/titleTimeAxis';
+        request({
+            url: urlPath,
+            method: "post",
+            json: true,
+            headers: headers.getRequestHeader(),
+            body: param
+        }, function (error, response, data) {
+            if (!error && response.statusCode == 200) {
+                console.log('getSpecialRecommendArticles http request return!');
+                isReturn = true;
+                data = data.content;
+                var description = '', option = {};
+                if (data.length > 0) {
+                    // make description
+                    var itemStr = "";
+                    data.forEach(function (article, i) {
+                        if (i < 4) {
+                            if (article.title.length > 30) {
+                                article.title = article.title.substring(0, 30) + '...';
+                            }
+                            if (article.content.length > 300) {
+                                article.content = article.content.substring(0, 300) + '...';
+                            }
+                            article.pubTime = dateUtil.formatDate(new Date(article.pubTime), 'yyyy-MM-dd');
+                            itemStr += "<div class='article-item'><div class='article-title'>" + article.title + "</div>" +
+                                "<div class='article-source'>信息来源：" + article.site + "</div>" +
+                                "<div class='article-pubTime'>发布时间：" + article.pubTime + "</div>" +
+                                "<div class='article-link'>原文链接：<a href='" + article.url + "' target='_blank'>" + article.url + "</a></div>" +
+                                "<div class='article-content'>" + article.content + "</div></div>";
+                        }
+                    });
+                    description = "<div class='describe-text'>" + itemStr + "</div>";
+                } else {
+                    description = "暂无相关数据";
+                }
+                renderData.option = option;
+                renderData.description = description;
+            } else {
+                console.log("get getSpecialRecommendArticles data error");
             }
         });
 

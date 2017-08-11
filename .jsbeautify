@@ -1,0 +1,11 @@
+{
+  "eol": "\n",
+  "e4x": true,
+  "indent_size": 2,
+  "js": {
+    "end_with_newline": true
+  },
+  "html": {
+    "extra_liners": []
+  }
+}

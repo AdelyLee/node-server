@@ -1,11 +1,11 @@
 {
   "type": "BASE_SPECIAL",
-  "title": "安全生产與情专报",
+  "title": "與情专报",
   "subTitle": "",
-  "author": "人事司(宣教办)、通信信息中心编制",
-  "createTime": "2017年5月",
-  "issue": "2017年第1期",
-  "outline": "2月份,安全生产相关舆情约115700篇，比1月份减少了16.7%。 其中网络媒体是本月的舆情主阵地，微信占比较上月有所下降",
+  "author": "",
+  "createTime": "",
+  "issue": "",
+  "outline": "",
   "briefingBody": [
     {
       "level": "level-one",
@@ -55,11 +55,11 @@
     },
     {
       "level": "level-one",
-      "title": "三、网民舆论热点",
+      "title": "三、舆论热点",
       "children": [
         {
           "level": "level-two",
-          "title": "网民舆论热点",
+          "title": "主流媒体舆论热点",
           "imageUrl": "",
           "option": {},
           "children": [],
@@ -108,6 +108,13 @@
           "method": "getCommentHotKeywordsChart"
         }
       ]
+    },
+    {
+      "level": "level-one",
+      "title": "五、推荐阅读",
+      "description": "",
+      "children": [],
+      "method": "getSpecialRecommendArticles"
     }
   ],
   "summary": ""
