@@ -19,7 +19,7 @@ jQuery.extend = function () {
     deep = false
 
   // Handle a deep copy situation
-  if (typeof target === "boolean") {
+  if (typeof target === 'boolean') {
     deep = target
 
     // Skip the boolean and the target
@@ -28,7 +28,7 @@ jQuery.extend = function () {
   }
 
   // Handle case when targe is a string or something (possible in deep copy)
-  if (typeof target !== "object") {
+  if (typeof target !== 'object') {
     target = {}
   }
 
@@ -38,7 +38,7 @@ jQuery.extend = function () {
     i--
   }
 
-  for ( ;i < length; i++) {
+  for (; i < length; i++) {
 
     // Only deal with non-null/undefined values
     if ((options = arguments[i]) !== null) {
@@ -55,7 +55,7 @@ jQuery.extend = function () {
 
         // Recurse if we're merging plain objects or arrays
         if (deep && copy && (jQuery.isPlainObject(copy) ||
-            (copyIsArray = Array.isArray(copy)))) {
+          (copyIsArray = Array.isArray(copy)))) {
 
           if (copyIsArray) {
             copyIsArray = false
@@ -81,8 +81,12 @@ jQuery.extend = function () {
 }
 
 jQuery.extend({
+  isWindow: function (obj) {
+    return obj !== null && obj === obj.window
+  },
+
   isFunction: function (obj) {
-    return jQuery.type(obj) === "function"
+    return jQuery.type(obj) === 'function'
   },
 
   isPlainObject: function (obj) {
@@ -90,7 +94,7 @@ jQuery.extend({
 
     // Detect obvious negatives
     // Use toString instead of jQuery.type to catch host objects
-    if (!obj || toString.call(obj) !== "[object Object]") {
+    if (!obj || toString.call(obj) !== '[object Object]') {
       return false
     }
 
@@ -102,8 +106,8 @@ jQuery.extend({
     }
 
     // Objects with prototype are plain iff they were constructed by a global Object function
-    Ctor = hasOwn.call(proto, "constructor") && proto.constructor
-    return typeof Ctor === "function" && fnToString.call(Ctor) === ObjectFunctionString
+    Ctor = hasOwn.call(proto, 'constructor') && proto.constructor
+    return typeof Ctor === 'function' && fnToString.call(Ctor) === ObjectFunctionString
   },
 
   isEmptyObject: function (obj) {
@@ -120,18 +124,55 @@ jQuery.extend({
 
   type: function (obj) {
     if (obj === null) {
-      return obj + ""
+      return obj + ''
     }
 
     // Support: Android <=2.3 only (functionish RegExp)
-    return typeof obj === "object" || typeof obj === "function" ?
-      class2type[toString.call(obj)] || "object" :
+    return typeof obj === 'object' || typeof obj === 'function' ?
+      class2type[toString.call(obj)] || 'object' :
       typeof obj
   },
 
   inArray: function (elem, arr, i) {
     return arr === null ? -1 : indexOf.call(arr, elem, i)
   },
+
+  each: function (obj, callback) {
+    var length, i = 0
+
+    if (isArrayLike(obj)) {
+      length = obj.length
+      for (; i < length; i++) {
+        if (callback.call(obj[i], i, obj[i]) === false) {
+          break
+        }
+      }
+    } else {
+      for (i in obj) {
+        if (callback.call(obj[i], i, obj[i]) === false) {
+          break
+        }
+      }
+    }
+
+    return obj
+  },
 })
+
+function isArrayLike(obj) {
+  // Support: real iOS 8.2 only (not reproducible in simulator)
+  // `in` check used to prevent JIT error (gh-2145)
+  // hasOwn isn't used here due to false negatives
+  // regarding Nodelist length in IE
+  var length = !!obj && 'length' in obj && obj.length,
+    type = jQuery.type(obj)
+
+  if (type === 'function' || jQuery.isWindow(obj)) {
+    return false
+  }
+
+  return type === 'array' || length === 0 ||
+    typeof length === 'number' && length > 0 && (length - 1) in obj
+}
 
 module.exports = jQuery

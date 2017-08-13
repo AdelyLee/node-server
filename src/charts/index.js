@@ -2,14 +2,14 @@
  * Created by lyc on 17-5-19.
  */
 var logger = require('../utils/logUtil')
-var echarts = require("echarts")
-var d3 = require("d3")
-var d3LayoutCloud = require("d3-cloud")
-var Canvas = require("canvas")
+var echarts = require('echarts')
+var d3 = require('d3')
+var d3LayoutCloud = require('d3-cloud')
+var Canvas = require('canvas')
 var fs = require('fs')
 var svg2png = require('svg2png')
 var path = require('path')
-var MapChartUtil = require("./mapChartUtil")
+var MapChartUtil = require('./mapChartUtil')
 
 // 引用d3-node后台生成png图片
 const D3Node = require('d3-node')
@@ -41,7 +41,7 @@ const chart = {
         data: ['test']
       },
       xAxis: {
-        data: ["a", "b", "c", "d", "f", "g"]
+        data: ['a', 'b', 'c', 'd', 'f', 'g']
       },
       yAxis: {},
       series: [{
@@ -70,9 +70,9 @@ const chart = {
     chart.setOption(config.option)
     try {
       fs.writeFileSync(config.path, chart.getDom().toBuffer())
-      logger.log("Create Img:" + config.path)
+      logger.debug('Create Img:' + config.path)
     } catch (err) {
-      logger.error("Error: Write File failed" + err.message)
+      logger.error('Error: Write File failed' + err.message)
     }
   },
 
@@ -88,7 +88,7 @@ const chart = {
 
     if (config.option.data.length === 0) {
       var projectPath = process.cwd()
-      var filename = projectPath + "/static/images/default.svg"
+      var filename = projectPath + '/static/images/default.svg'
       var svgBuffer = fs.readFileSync(filename)
       var outputBuffer = svg2png.sync(svgBuffer, {
         width: 400,
@@ -113,9 +113,9 @@ const chart = {
         }
       })).padding(2).rotate(function () {
         return ~~(Math.random() * 2) * 90
-      }).font("Impact").fontSize(function (d) {
+      }).font('Impact').fontSize(function (d) {
         return d.size
-      }).on("end", draw)
+      }).on('end', draw)
 
     layout.start()
 
@@ -123,21 +123,21 @@ const chart = {
       var height = config.height || 400
       var width = config.width || 400
       d3n.createSVG(width, height)
-        .style("border-radius", width + "px")
-        .append("g")
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
-        .selectAll("text")
+        .style('border-radius', width + 'px')
+        .append('g')
+        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+        .selectAll('text')
         .data(words)
         .enter()
-        .append("text")
-        .style("font-size", function (d) {
-          return d.size + "px"
-        }).style("font-family", "微软雅黑")
-        .style("fill", function (d, i) {
+        .append('text')
+        .style('font-size', function (d) {
+          return d.size + 'px'
+        }).style('font-family', '微软雅黑')
+        .style('fill', function (d, i) {
           return fill(i)
-        }).attr("text-anchor", "middle")
-        .attr("transform", function (d) {
-          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")"
+        }).attr('text-anchor', 'middle')
+        .attr('transform', function (d) {
+          return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')'
         }).text(function (d) {
           return d.text
         })
@@ -148,9 +148,9 @@ const chart = {
         var svgBuffer = new Buffer(d3n.svgString(), 'utf-8')
         var outputBuffer = svg2png.sync(svgBuffer)
         fs.writeFileSync(config.path, outputBuffer)
-        logger.log("Create Img:" + config.path)
+        logger.debug('Create Img:' + config.path)
       } catch (err) {
-        logger.error("Error: Write File failed" + err.message)
+        logger.error('Error: Write File failed' + err.message)
       }
 
     }
@@ -160,13 +160,13 @@ const chart = {
 module.exports = chart
 
 function getMapJson(mapTypeStr) {
-  var mapType = mapTypeStr === undefined ? "china" : mapTypeStr
+  var mapType = mapTypeStr === undefined ? 'china' : mapTypeStr
   var provinces = []
   for (var province in MapChartUtil._provinceMap) {
     provinces.push(province)
   }
 
-  var geoJsonName = ""
+  var geoJsonName = ''
   var filePath = path.resolve('./')
   var mapJsonUrl = filePath + '/static/geoJson/china.json'
   if (mapType === 'china') {

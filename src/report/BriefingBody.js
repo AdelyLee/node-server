@@ -5,18 +5,17 @@
  */
 
 const BriefingBody = {
-    constructor(briefingCells) { //构造函数
-        this.briefingCells = briefingCells;
-    },
+  constructor(briefingCells) { // 构造函数
+    this.briefingCells = briefingCells
+  },
 
-    getBriefingCells() {
-        return this.briefingCells;
-    },
+  getBriefingCells() {
+    return this.briefingCells
+  },
 
-    setBriefingCells(briefingCells) {
-        this.briefingCells = briefingCells;
-    }
-};
+  setBriefingCells(briefingCells) {
+    this.briefingCells = briefingCells
+  }
+}
 
-module.exports = BriefingBody;
-// export {BriefingBody}
+module.exports = BriefingBody
