@@ -9,7 +9,6 @@ const logger = log4js.getLogger('description')
  * 获取报告概要 POST /description/monthLyOutline/,
  * /description/weeklyOutline/,
  * /description/specialOutline/
- * 专题的预估量也是调用该接口
  * @param params
 */
 exports.getReportOutline = params => {

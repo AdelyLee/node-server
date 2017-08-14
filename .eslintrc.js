@@ -1,10 +1,12 @@
 module.exports = {
+  "parser": 'babel-eslint',
   "env": {
     "es6": true,
     "node": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
+    "ecmaVersion": 6,
     "ecmaFeatures": {
       "experimentalObjectRestSpread": true,
       "jsx": true
@@ -37,5 +39,7 @@ module.exports = {
     "semi": [2, "never"],
     // 注释风格要不要有空格什么的
     "spaced-comment": 2,
+    // 引号类型 `` "" ''
+    "quotes": [2, "single"],
   }
 }

@@ -44,7 +44,7 @@ exports.getOption = function (data, chartConfig) {
     }
   }
   let {
-    tooltipData = defaultTooltipData, legendData = defaultLegendData, pieForEmotion = false, seriesData
+    tooltipData = defaultTooltipData, legendData = defaultLegendData, seriesData
   } = chartConfig
   let seriesRenderData = []
   let defaultSeriesItem = {
@@ -53,21 +53,6 @@ exports.getOption = function (data, chartConfig) {
     radius: ['40%', '55%'],
     avoidLabelOverlap: false,
     data: []
-  }
-  if (pieForEmotion) {
-    defaultSeriesItem.itemStyle = {
-      normal: {
-        color: function (params) {
-          if (params.name === '正面') {
-            return '#0092ff'
-          } else if (params.name === '中性') {
-            return '#eba954'
-          } else if (params.name === '负面') {
-            return '#d74e67'
-          }
-        }
-      }
-    }
   }
   jQuery.extend(true, defaultLegendData, legendData)
   legendData = defaultLegendData

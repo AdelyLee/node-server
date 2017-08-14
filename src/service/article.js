@@ -1,4 +1,5 @@
 const request = require('request')
+const qs = require('querystring')
 const deasync = require('deasync')
 const api = require('../utils/api')
 const base = require('../utils/common')
@@ -53,6 +54,62 @@ exports.filterAndGroupByTime = params => {
       renderData = data
     } else {
       logger.error('filterAndGroupByTime error: ', error)
+    }
+  })
+  while (!isReturn) {
+    deasync.runLoopOnce()
+  }
+
+  return renderData
+}
+/**
+ * 新闻标题聚类 POST /es/titleTimeAxis
+ * @param params
+*/
+exports.titleTimeAxis = params => {
+  logger.info('titleTimeAxis')
+  var isReturn = false, renderData = {}
+  request({
+    url: `${base}/es/titleTimeAxis`,
+    method: 'post',
+    json: true,
+    headers: api.getRequestHeader(),
+    body: params
+  }, function (error, response, data) {
+    if (!error && response.statusCode === 200) {
+      isReturn = true
+      logger.error('titleTimeAxis success!')
+      renderData = data
+    } else {
+      logger.error('titleTimeAxis error: ', error)
+    }
+  })
+  while (!isReturn) {
+    deasync.runLoopOnce()
+  }
+
+  return renderData
+}
+/**
+ * 获取文章关键次 GET /es/hotWords.json
+ * @param params
+*/
+exports.hotWords = params => {
+  logger.info('hotWords')
+  var isReturn = false, renderData = {}
+  request({
+    url: `${base}/es/hotWords.json?` + qs.stringify(params),
+    method: 'get',
+    json: true,
+    headers: api.getRequestHeader(),
+    body: params
+  }, function (error, response, data) {
+    if (!error && response.statusCode === 200) {
+      isReturn = true
+      logger.error('hotWords success!')
+      renderData = data
+    } else {
+      logger.error('hotWords error: ', error)
     }
   })
   while (!isReturn) {
