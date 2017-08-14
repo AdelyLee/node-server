@@ -9,15 +9,18 @@ const articleServer = require('../service/article')
 const descriptionServer = require('../service/description')
 const utils = require('../utils/utils')
 const dateUtil = require('../utils/dateUtil')
-const headers = require('../utils/headerUtil')
-const chartOption = require('../options/chart-options')
-const jqueryUtil = require('../utils/jqueryUtil')
+const pieChart = require('../options/pie-chart')
+const jQuery = require('../utils/jqueryUtil')
 
-const jQuery = jqueryUtil.jQuery
+// const jQuery = jqueryUtil.jQuery
 
-// 月报标题
+/**
+ * 获取月报标题
+ * @param report
+ */
 exports.getBriefingTitle = function (report) {
-  var title = '', reportTime = ''
+  var title = '',
+    reportTime = ''
   if (report.type === 'MONTHLY') {
     reportTime = dateUtil.formatDate(dateUtil.parseDate(report.startDate), 'yyyy年MM月')
     title = '月报' + reportTime
@@ -28,15 +31,31 @@ exports.getBriefingTitle = function (report) {
 
   return title
 }
-// 月报子标题
-exports.getBriefingSubTitle = function () { return '' }
-// 月报期号
-exports.getBriefingIssue = function () { return '' }
-// 月报作者
-exports.getBriefingAuthor = function () { return '' }
-// 月报概述
+/**
+ * 月报子标题
+ */
+exports.getBriefingSubTitle = function () {
+  return ''
+}
+/**
+ * 月报期号
+ */
+exports.getBriefingIssue = function () {
+  return ''
+}
+/**
+ * 月报作者
+ */
+exports.getBriefingAuthor = function () {
+  return ''
+}
+/**
+ * 月报概述
+ */
 exports.getBriefingOutline = function (report) {
-  let { outline = '', data } = {}
+  let {
+    outline = '', data
+  } = {}
   let params = {
     'date': {
       'startDate': report.startDate,
@@ -51,7 +70,11 @@ exports.getBriefingOutline = function (report) {
   }
   data = descriptionServer.getReportOutline(params)
 
-  var total = 0, count = 0, comparePercent = 0, compareLast = '', time = ''
+  var total = 0,
+    count = 0,
+    comparePercent = 0,
+    compareLast = '',
+    time = ''
   if (report.type === 'MONTHLY') {
     count = data.monthCount
     comparePercent = data.mom
@@ -71,7 +94,9 @@ exports.getBriefingOutline = function (report) {
     compareLast = '减少' + comparePercent.toFixed(2) + '％'
   }
 
-  var keywords = '', mustWordArray = [], shouldWordArray = []
+  var keywords = '',
+    mustWordArray = [],
+    shouldWordArray = []
   if (report.mustWord) {
     mustWordArray = report.mustWord.split('@')
   }
@@ -87,7 +112,8 @@ exports.getBriefingOutline = function (report) {
   keywords = mustWordArray.join('、') + '、' + shouldWordArray.join('、')
   keywords = keywords.substring(0, keywords.length)
 
-  var itemStr = '', itemCompareLast = ''
+  var itemStr = '',
+    itemCompareLast = ''
   if (data.maxType && data.maxType.length > 0) {
     data.maxType.forEach(function (item) {
       data.compare.forEach(function (obj) {
@@ -97,8 +123,8 @@ exports.getBriefingOutline = function (report) {
           } else {
             itemCompareLast = '减少' + obj.value.toFixed(2) + '％'
           }
-          itemStr += '<span class="describe-redText">' + utils.resetArticleTypeName(item.key)
-            + '（' + item.value + '）</span>条,同比上' + time + '<span class="describe-redText">' + itemCompareLast + '</span>，'
+          itemStr += '<span class="describe-redText">' + utils.resetArticleTypeName(item.key) +
+            '（' + item.value + '）</span>条,同比上' + time + '<span class="describe-redText">' + itemCompareLast + '</span>，'
         }
       })
     })
@@ -118,16 +144,25 @@ exports.getBriefingOutline = function (report) {
   }
 
   outline = '<div class="describe-text">本' + time + '共抓取数据<span class="describe-redText">' + total +
-    '</span>条，同比上' + time + '<span class="describe-redText">' + compareLast
-    + '</span>，本' + time + '共抓取<span class="describe-redText">' + keywords + '</span>相关'
-    + itemStr + '，' + siteStr + '</div>'
+    '</span>条，同比上' + time + '<span class="describe-redText">' + compareLast +
+    '</span>，本' + time + '共抓取<span class="describe-redText">' + keywords + '</span>相关' +
+    itemStr + '，' + siteStr + '</div>'
   return outline
 }
-// 月报总结
-exports.getBriefingSummary = function () { return '' }
+/**
+ * 月报总结
+ */
+exports.getBriefingSummary = function () {
+  return ''
+}
 // 载体分布情况
 exports.getArticleTypeChart = function (report) {
-  let { data, renderData } = {}
+  let {
+    data,
+    renderData = {},
+    description = '',
+    total = 0
+  } = {}
   let params = {
     'date': {
       'startDate': report.startDate,
@@ -143,24 +178,24 @@ exports.getArticleTypeChart = function (report) {
   }
   data = articleServer.getFilterAndGroupBy(params)
 
-  let { description = '', ...renderDataTemp } = {}
   let chartConfig = {
-    labelLength: 20,
-    legendData: { show: false },
-    gridData: { top: 10, bottom: 20 },
-    xAxisData: { type: 'value', axisLabel: { textStyle: { fontWeight: 700, fontSize: 20 } } },
-    yAxisData: { type: 'category', axisLabel: { textStyle: { fontWeight: 700, fontSize: 20 } } }
+    legendData: {
+      show: false
+    },
   }
-  let renderItem = { name: '载体类型', data: [] }
-  var total = 0
-  data.forEach(function (item) {
-    var node = {}
+  let renderDataTemp = []
+  let renderItem = {
+    name: '载体类型',
+    data: []
+  }
+  jQuery.each(data, function (i, item) {
+    let node = {}
     node.name = utils.resetArticleTypeName(item.key)
     node.value = item.value
     renderItem.data.push(node)
   })
   renderDataTemp.push(renderItem)
-  var option = chartOption.pieChartOption.getOption(renderDataTemp, chartConfig)
+  let option = pieChart.getOption(renderDataTemp, chartConfig)
   if (data.length > 0) {
     // make ArticleTypeChart description
     var itemsStr = ''
@@ -179,7 +214,10 @@ exports.getArticleTypeChart = function (report) {
 }
 // 安全生产與情趋势
 exports.getArticleTrendChart = function (report) {
-  let { data, renderData } = {}
+  let {
+    data,
+    renderData
+  } = {}
   let params = {
     'date': {
       'startDate': report.startDate,
@@ -201,7 +239,8 @@ exports.getArticleTrendChart = function (report) {
 exports.getArticleHotPointChart = function (report) {
   var titleMust = ''
   titleMust = report.mustWord.split('@')[0]
-  var renderData = {}, isReturn = false
+  var renderData = {},
+    isReturn = false
   var param = {
     date: {
       startDate: report.startDate,
@@ -241,12 +280,35 @@ exports.getArticleHotPointChart = function (report) {
       var renderDataTemp = []
       var chartConfig = {
         labelLength: 20,
-        legendData: { show: false },
-        gridData: { top: 10, bottom: 20 },
-        xAxisData: { type: 'value', axisLabel: { textStyle: { fontWeight: 700, fontSize: 20 } } },
-        yAxisData: { type: 'category', axisLabel: { textStyle: { fontWeight: 700, fontSize: 20 } } }
+        legendData: {
+          show: false
+        },
+        gridData: {
+          top: 10,
+          bottom: 20
+        },
+        xAxisData: {
+          type: 'value',
+          axisLabel: {
+            textStyle: {
+              fontWeight: 700,
+              fontSize: 20
+            }
+          }
+        },
+        yAxisData: {
+          type: 'category',
+          axisLabel: {
+            textStyle: {
+              fontWeight: 700,
+              fontSize: 20
+            }
+          }
+        }
       }
-      var renderItem = { data: [] }
+      var renderItem = {
+        data: []
+      }
       renderItem.name = '舆论热点'
       if (data.length > 0) {
         data.forEach(function (item) {
@@ -280,8 +342,8 @@ exports.getArticleHotPointChart = function (report) {
           }
         })
         itemStr = itemStr.substring(0, itemStr.length - 1)
-        description = '<div class="describe-text">' + dataMonth + '媒体报道情况，从其具体内容方面也可以发现，主要话题集中在'
-          + itemStr + '等几个方面。</div>'
+        description = '<div class="describe-text">' + dataMonth + '媒体报道情况，从其具体内容方面也可以发现，主要话题集中在' +
+          itemStr + '等几个方面。</div>'
       } else {
         description = '暂无相关数据'
       }
@@ -300,7 +362,8 @@ exports.getArticleHotPointChart = function (report) {
 }
 // 新闻情感正负面分析
 exports.getNewsEmotionPieChart = function (report) {
-  var renderData = {}, isReturn = false
+  var renderData = {},
+    isReturn = false
   var param = {
     groupName: 'nlp.sentiment.label',
     mustWord: report.mustWord,
@@ -320,7 +383,10 @@ exports.getNewsEmotionPieChart = function (report) {
     if (!error && response.statusCode === 200) {
       // console.log('getNewsEmotionPieChart http request return!')
       isReturn = true
-      var total = 0, seriesData = [], legendData = [], description = ''
+      var total = 0,
+        seriesData = [],
+        legendData = [],
+        description = ''
       if (data.length > 0) {
         // 拼装 chart option
         for (var item of data) {
@@ -353,34 +419,32 @@ exports.getNewsEmotionPieChart = function (report) {
           },
           data: legendData
         },
-        series: [
-          {
-            name: '情感类型',
-            type: 'pie',
-            radius: ['40%', '60%'],
-            label: {
-              normal: {
-                show: false,
-                textStyle: {
-                  fontSize: 20
-                }
-              },
-              emphasis: {
-                show: true,
-                textStyle: {
-                  fontSize: '30',
-                  fontWeight: 'bold'
-                }
+        series: [{
+          name: '情感类型',
+          type: 'pie',
+          radius: ['40%', '60%'],
+          label: {
+            normal: {
+              show: false,
+              textStyle: {
+                fontSize: 20
               }
             },
-            labelLine: {
-              normal: {
-                show: false
+            emphasis: {
+              show: true,
+              textStyle: {
+                fontSize: '30',
+                fontWeight: 'bold'
               }
-            },
-            data: seriesData
-          }
-        ]
+            }
+          },
+          labelLine: {
+            normal: {
+              show: false
+            }
+          },
+          data: seriesData
+        }]
       }
 
       if (data.length > 0) {
@@ -390,9 +454,9 @@ exports.getNewsEmotionPieChart = function (report) {
         var itemStr = ''
         seriesData.forEach(function (item, i) {
           if (i === 0) {
-            itemStr += '<span class="describe-redText">' + item.name
-              + '</span>情感最多有<span class="describe-redText">' + item.value
-              + '(' + (item.value * 100 / total).toFixed(2) + '%)' + '</span>，'
+            itemStr += '<span class="describe-redText">' + item.name +
+              '</span>情感最多有<span class="describe-redText">' + item.value +
+              '(' + (item.value * 100 / total).toFixed(2) + '%)' + '</span>，'
           }
           if (i > 0) {
             itemStr += '<span class="describe-redText">' + item.name + item.value + '(' + (item.value * 100 / total).toFixed(2) + '%)' + '</span>，'
@@ -420,7 +484,8 @@ exports.getNewsEmotionPieChart = function (report) {
 }
 // 主流媒体报道统计
 exports.getMediaBarChart = function (report) {
-  var renderData = {}, isReturn = false
+  var renderData = {},
+    isReturn = false
   var param = {
     groupName: 'site',
     mustWord: report.mustWord,
@@ -444,12 +509,36 @@ exports.getMediaBarChart = function (report) {
       var description = ''
       var renderDataTemp = []
       var chartConfig = {
-        legendData: { show: false },
-        gridData: { top: 10, bottom: 60 },
-        xAxisData: { type: 'category', axisLabel: { rotate: 45, textStyle: { fontWeight: 700, fontSize: 18 } } },
-        yAxisData: { type: 'value', axisLabel: { textStyle: { fontWeight: 700, fontSize: 18 } } }
+        legendData: {
+          show: false
+        },
+        gridData: {
+          top: 10,
+          bottom: 60
+        },
+        xAxisData: {
+          type: 'category',
+          axisLabel: {
+            rotate: 45,
+            textStyle: {
+              fontWeight: 700,
+              fontSize: 18
+            }
+          }
+        },
+        yAxisData: {
+          type: 'value',
+          axisLabel: {
+            textStyle: {
+              fontWeight: 700,
+              fontSize: 18
+            }
+          }
+        }
       }
-      var renderItem = { data: [] }
+      var renderItem = {
+        data: []
+      }
       renderItem.name = '媒体名称'
       if (data.length > 0) {
         data.forEach(function (item) {
@@ -494,7 +583,8 @@ exports.getMediaBarChart = function (report) {
 }
 // 热点词词云分析
 exports.getArticleHotKeywordsChart = function (report) {
-  var renderData = {}, isReturn = false
+  var renderData = {},
+    isReturn = false
   var param = {
     limit: 50,
     mustWord: report.mustWord,
@@ -515,7 +605,8 @@ exports.getArticleHotKeywordsChart = function (report) {
     if (!error && response.statusCode === 200) {
       // console.log('getArticleHotKeywordsChart http request return!')
       isReturn = true
-      var keywords = [], description = ''
+      var keywords = [],
+        description = ''
       if (data.length > 0) {
         for (var item of data) {
           var keyword = {}
@@ -546,85 +637,6 @@ exports.getArticleHotKeywordsChart = function (report) {
       renderData.description = description
     } else {
       // console.log('get getArticleHotKeywordsChart data error')
-    }
-  })
-
-  while (!isReturn) {
-    deasync.runLoopOnce()
-  }
-
-  return renderData
-}
-// 事故网络相关报道
-exports.getAccidentTable = function (report) {
-  var renderData = {}, isReturn = false
-  var condition = {}
-  condition.shouldWord = ''
-  condition.mustWord = '安徽@煤矿@事故'
-  condition.mustNotWord = ''
-  var param = {
-    groupName: 'title.raw',
-    mustWord: condition.mustWord,
-    mustNotWord: condition.mustNotWord,
-    shouldWord: condition.shouldWord,
-    s_date: report.startDate,
-    e_date: report.endDate,
-    type: 'title',
-    articleType: 'news'
-  }
-
-  var urlPath = url.webserviceUrl + '/es/filterAndGroupBy.json?' + querystring.stringify(param)
-  request({
-    url: urlPath,
-    method: 'get',
-    json: true,
-    headers: headers.getRequestHeader()
-  }, function (error, response, data) {
-    if (!error && response.statusCode === 200) {
-      // console.log('getAccidentTable http request return!')
-      isReturn = true
-      var accidents = []
-      var description = ''
-      if (data.length > 0) {
-        data.forEach(function (item, i) {
-          item.index = i + 1
-          item.title = item.key
-          item.count = item.value
-          accidents.push(item)
-        })
-      }
-
-      var option = {
-        data: accidents
-      }
-
-      if (data.length > 0) {
-        // make description
-        var dataMonth = ''
-        if (report.type === 'MONTHLY') {
-          dataMonth = '本月'
-        } else if (report.type === 'WEEKLY') {
-          dataMonth = '本周'
-        }
-        var itemStr = ''
-        data.forEach(function (item, i) {
-          if (item.key.length > 30) {
-            item.key = item.key.substring(0, 30) + '...'
-          }
-          if (i < 3) {
-            itemStr += '<span class="describe-redText">“' + item.key + '” (' + item.value + ')</span>、'
-          }
-        })
-        itemStr = itemStr.substring(0, itemStr.length - 1)
-        description = '<div class="describe-text">' + dataMonth + '媒体报道情况，从其具体内容方面也可以发现，主要话题集中在'
-          + itemStr + '等几个方面。</div>'
-      } else {
-        description = '暂无相关数据'
-      }
-      renderData.option = option
-      renderData.description = description
-    } else {
-      // console.log('get getAccidentTable data error')
     }
   })
 
