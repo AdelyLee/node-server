@@ -9,7 +9,9 @@ const pieChart = require('../options/pie-chart')
 const lineChart = require('../options/line-chart')
 const barChart = require('../options/bar-chart')
 const jQuery = require('../utils/jqueryUtil')
+const log4js = require('../utils/logUtil')
 
+const logger = log4js.getLogger('report')
 /**
  * 获取报告标题
  * @param report
@@ -226,7 +228,7 @@ exports.getArticleTrendChart = function (report) {
   } = {}
   let params = {
     date: {
-      startDate: report.startDate,
+      startDate: report.trendStartData,
       endDate: report.endDate
     },
     groupName: 'type',
@@ -235,33 +237,68 @@ exports.getArticleTrendChart = function (report) {
       shouldWord: report.shouldWord,
       mustNotWord: report.mustNotWord,
       expression: report.expression
+    },
+    type: ['article']
+  }
+  let gapParams = { gap: '1', dateType: 'day' }
+  data = articleServer.filterAndGroupByTime(params, gapParams)
+  logger.info('filterAndGroupByTime data \n', data)
+  let renderDataTemp = []
+  if (report.type === 'MONTHLY' || report.type === 'WEEKYLY') {
+    let lastTimeStart = dateUtil.parseDate(report.trendStartData).getTime()
+    let lastTimeEnd = dateUtil.parseDate(report.startDate).getTime()
+    let thisTimeStart = lastTimeEnd
+    let thisTimeEnd = dateUtil.parseDate(report.endDate).getTime()
+    let lastRenderItem = { name: '', data: [] }
+    let thisRenderItem = { name: '', data: [] }
+    jQuery.each(data.article, function (i, item) {
+      let node = {}
+      let itemDate = dateUtil.parseDate(item.key)
+      let itemTime = itemDate.getTime()
+      if (itemTime >= lastTimeStart && itemTime < lastTimeEnd) {
+        if (report.type === 'MONTHLY') {
+          lastRenderItem.name = '上月'
+          node.name = itemDate.getDate()
+        } else if (report.type === 'WEEKLY') {
+          lastRenderItem.name = '上周'
+          node.name = utils.resetDate(itemDate.getDay())
+        }
+        node.value = item.value
+        lastRenderItem.data.push(node)
+      } else if (itemTime >= thisTimeStart && itemTime < thisTimeEnd) {
+        if (report.type === 'MONTHLY') {
+          thisRenderItem.name = '本月'
+          node.name = itemDate.getDate()
+        } else if (report.type === 'WEEKLY') {
+          thisRenderItem.name = '本周'
+          node.name = utils.resetDate(itemDate.getDay())
+        }
+        node.value = item.value
+        thisRenderItem.data.push(node)
+      }
+    })
+    renderDataTemp.push(lastRenderItem)
+    renderDataTemp.push(thisRenderItem)
+  } else if (report.type === 'SEPCIAL') {
+    for (let name in data) {
+      let renderItem = {}
+      renderItem.name = utils.resetArticleTypeName(name)
+      renderItem.data = data[name]
+      renderDataTemp.push(renderItem)
     }
   }
-  data = articleServer.filterAndGroupByTime(params)
-
   let chartConfig = {
     legendData: {
-      show: false
+      show: true
     },
   }
-  let renderDataTemp = []
-  let renderItem = {
-    name: '载体类型',
-    data: []
-  }
-  jQuery.each(data, function (i, item) {
-    let node = {}
-    node.name = utils.resetArticleTypeName(item.key)
-    node.value = item.value
-    renderItem.data.push(node)
-  })
-  renderDataTemp.push(renderItem)
   let option = lineChart.getOption(renderDataTemp, chartConfig)
 
   renderData.option = option
   renderData.option = description
   return renderData
 }
+
 /**
  * 播舆论热度
  * @param report

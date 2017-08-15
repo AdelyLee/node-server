@@ -5,7 +5,7 @@ const api = require('../utils/api')
 const base = require('../utils/common')
 const log4js = require('../utils/logUtil')
 
-const logger = log4js.getLogger('login')
+const logger = log4js.getLogger('article service')
 /**
  * 统计查询接口 POST /es/filterAndGroupBy
  * @param params
@@ -22,7 +22,7 @@ exports.getFilterAndGroupBy = params => {
   }, function (error, response, data) {
     if (!error && response.statusCode === 200) {
       isReturn = true
-      logger.error('getFilterAndGroupBy success!')
+      logger.info('getFilterAndGroupBy success!')
       renderData = data
     } else {
       logger.error('getFilterAndGroupBy error: ', error)
@@ -38,11 +38,12 @@ exports.getFilterAndGroupBy = params => {
  * 时间间隔统计查询接口 POST /es/filterAndGroupByTime
  * @param params
 */
-exports.filterAndGroupByTime = params => {
+exports.filterAndGroupByTime = (params, gapParams) => {
   logger.info('filterAndGroupByTime')
   var isReturn = false, renderData = {}
+  debugger
   request({
-    url: `${base}/es/filterAndGroupByTime`,
+    url: `${base}/es/filterAndGroupByTime?` + qs.stringify(gapParams),
     method: 'post',
     json: true,
     headers: api.getRequestHeader(),
@@ -50,7 +51,7 @@ exports.filterAndGroupByTime = params => {
   }, function (error, response, data) {
     if (!error && response.statusCode === 200) {
       isReturn = true
-      logger.error('filterAndGroupByTime success!')
+      logger.info('filterAndGroupByTime success!')
       renderData = data
     } else {
       logger.error('filterAndGroupByTime error: ', error)

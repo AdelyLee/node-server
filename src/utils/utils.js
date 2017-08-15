@@ -24,6 +24,9 @@ const utils = {
       case 'weixin':
         target = '微信'
         break
+      case 'article':
+        target = '文章'
+        break
     }
 
     return target
