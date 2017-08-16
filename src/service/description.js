@@ -6,24 +6,16 @@ const log4js = require('../utils/logUtil')
 
 const logger = log4js.getLogger('description')
 /**
- * 获取报告概要 POST /description/monthLyOutline/,
- * /description/weeklyOutline/,
- * /description/specialOutline/
+ * 获取报告概要 POST /description/specialOutline/
  * @param params
-*/
+ */
 exports.getReportOutline = params => {
   logger.info('getReportOutline')
-  var isReturn = false, renderData = {}, urlPath = ''
-  let { type } = params
-  if (type === 'MONTHLY') {
-    urlPath = `${base}/description/monthLyOutline/`
-  } else if (type === 'WEEKLY') {
-    urlPath = `${base}/description/weeklyOutline/`
-  } else if (type === 'SPECIAL') {
-    urlPath = `${base}/description/specialOutline/`
-  }
+  let {
+    isReturn = false, renderData = {}
+  } = {}
   request({
-    url: urlPath,
+    url: `${base}/description/specialOutline/`,
     method: 'post',
     json: true,
     headers: api.getRequestHeader(),
@@ -32,7 +24,7 @@ exports.getReportOutline = params => {
     if (!error && response.statusCode === 200) {
       isReturn = true
       renderData = data
-      logger.error('getReportOutline success ', data)
+      logger.info('getReportOutline success!')
     } else {
       logger.error('getReportOutline error: ', error)
     }

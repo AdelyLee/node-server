@@ -52,48 +52,34 @@ exports.getBriefingAuthor = function () {
 /**
  * 报告概述
  */
-exports.getBriefingOutline = function (report) {
+exports.getBriefingOutline = function () {
+  return ''
+}
+/**
+ * 舆情综述
+ * @param report
+ * @return renderData
+ */
+exports.getReportSummarize = function (report) {
   let {
-    outline = '', data
+    data,
+    renderData = {},
+    description = '',
+    option = {}
   } = {}
   let params = {
-    'date': {
-      'startDate': report.startDate,
-      'endDate': report.endDate
+    date: {
+      startDate: report.startDate,
+      endDate: report.endDate
     },
-    'keyword': {
-      'mustWord': report.mustWord,
-      'shouldWord': report.shouldWord,
-      'mustNotWord': report.mustNotWord,
-      'expression': report.expression
+    keyword: {
+      mustWord: report.mustWord,
+      shouldWord: report.shouldWord,
+      mustNotWord: report.mustNotWord
     }
   }
   data = descriptionServer.getReportOutline(params)
-
-  var total = 0,
-    count = 0,
-    comparePercent = 0,
-    compareLast = '',
-    time = ''
-  if (report.type === 'MONTHLY') {
-    count = data.monthCount
-    comparePercent = data.mom
-    time = '月'
-  } else if (report.type === 'WEEKLY') {
-    count = data.weekCount
-    comparePercent = data.wow
-    time = '周'
-  }
-
-  if (count > 0) {
-    total = count
-  }
-  if (comparePercent > 0) {
-    compareLast = '增加' + comparePercent.toFixed(2) + '％'
-  } else {
-    compareLast = '减少' + comparePercent.toFixed(2) + '％'
-  }
-
+  logger.info('getReportSummarize data \n', data)
   var keywords = '',
     mustWordArray = [],
     shouldWordArray = []
@@ -111,43 +97,61 @@ exports.getBriefingOutline = function (report) {
   }
   keywords = mustWordArray.join('、') + '、' + shouldWordArray.join('、')
   keywords = keywords.substring(0, keywords.length)
-
-  let { itemStr = '', itemCompareLast = '' } = {}
-  if (data.maxType && data.maxType.length > 0) {
-    data.maxType.forEach(function (item) {
-      data.compare.forEach(function (obj) {
-        if (item.key === obj.key) {
-          if (obj.value > 0) {
-            itemCompareLast = '增加' + obj.value.toFixed(2) + '％'
-          } else {
-            itemCompareLast = '减少' + obj.value.toFixed(2) + '％'
-          }
-          itemStr += '<span class="describe-redText">' + utils.resetArticleTypeName(item.key) +
-            '（' + item.value + '）</span>条,同比上' + time + '<span class="describe-redText">' + itemCompareLast + '</span>，'
-        }
-      })
-    })
-
-    itemStr = itemStr.substring(0, itemStr.length - 1)
+  var total = 0
+  if (data.monthCount > 0) {
+    total = data.monthCount
   }
-
-  var siteStr = ''
-  if (data.maxSite && data.maxSite.length > 0) {
-    siteStr = '其中较为活跃的站点有'
-    data.maxSite.forEach(function (item, i) {
+  var typeItemStr = '',
+    siteItemStr = '',
+    titleItemStr = '',
+    emotionItemStr = ''
+  if (data.maxType.length > 0) {
+    data.maxType.forEach(function (item, i) {
       if (i < 3) {
-        siteStr += '<span class="describe-redText">' + item.key + '（' + item.value + '）</span>条，'
+        typeItemStr += '<span class="describe-redText">' + utils.resetArticleTypeName(item.key) + '（' +
+          item.value + '）</span>条、'
       }
     })
-    siteStr = siteStr.substring(0, siteStr.length - 1)
   }
+  typeItemStr = typeItemStr.substring(0, typeItemStr.length - 1)
+  if (data.maxSite.length > 0) {
+    data.maxSite.forEach(function (item, i) {
+      if (i < 3) {
+        siteItemStr += '<span class="describe-redText">' + item.key + '（' +
+          item.value + '）</span>条、'
+      }
+    })
+  }
+  siteItemStr = siteItemStr.substring(0, siteItemStr.length - 1)
+  if (data.maxTitle.length > 0) {
+    data.maxTitle.forEach(function (item, i) {
+      if (i < 3) {
+        titleItemStr += '以<span class="describe-redText">“' + item.key + '”</span>标题的报道具有（' +
+          item.value + '）条、'
+      }
+    })
+  }
+  titleItemStr = titleItemStr.substring(0, titleItemStr.length - 1)
+  if (data.label.length > 0) {
+    data.label.forEach(function (item) {
+      emotionItemStr += '<span class="describe-redText">' + utils.resetEmotionTypeName(item.key) + '</span>报道具有<span class="describe-redText">（' +
+        item.value + '）</span>条，所占比例为<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>'
+    })
+  }
+  emotionItemStr = emotionItemStr.substring(0, emotionItemStr.length - 1)
+  description = '<div class="describe-text"><div class="paragraph">根据以<span class="describe-redText">“' + keywords + '”</span>等关键字的进行互联网监控，从<span class="describe-redText">' + report.startDate + '</span>至<span class="describe-redText">' +
+    report.endDate + '</span>，对以<span class="describe-redText">“' + report.name + '”</span>为主题进行数据爬取，监控发现对该主题进行报道具有<span class="describe-redText">' + total + '</span>条，其中包含' + typeItemStr +
+    '</span>。根据报道数量排序，对该主题报道最多的为' + siteItemStr + '。</div><div class="paragraph">对该主题，媒体采用不同的标题方式进行报道，包括' + titleItemStr + '。</div><div class="paragraph">通过对以上所有报道进行正负面舆情分析，其中' + emotionItemStr + '。</div></div>'
 
-  outline = '<div class="describe-text">本' + time + '共抓取数据<span class="describe-redText">' + total +
-    '</span>条，同比上' + time + '<span class="describe-redText">' + compareLast +
-    '</span>，本' + time + '共抓取<span class="describe-redText">' + keywords + '</span>相关' +
-    itemStr + '，' + siteStr + '</div>'
-  return outline
+
+  renderData.description = description
+  renderData.option = option
+
+  logger.info('getReportSummarize description \n', description)
+
+  return renderData
 }
+
 /**
  * 报告总结
  */
@@ -180,7 +184,7 @@ exports.getArticleTypeChart = function (report) {
     }
   }
   data = articleServer.getFilterAndGroupBy(params)
-
+  logger.info('getArticleTypeChart data \n', data)
   let chartConfig = {
     legendData: {
       show: false
@@ -240,7 +244,10 @@ exports.getArticleTrendChart = function (report) {
     },
     type: ['article']
   }
-  let gapParams = { gap: '1', dateType: 'day' }
+  let gapParams = {
+    gap: '1',
+    dateType: 'day'
+  }
   data = articleServer.filterAndGroupByTime(params, gapParams)
   logger.info('filterAndGroupByTime data \n', data)
   let renderDataTemp = []
@@ -249,8 +256,14 @@ exports.getArticleTrendChart = function (report) {
     let lastTimeEnd = dateUtil.parseDate(report.startDate).getTime()
     let thisTimeStart = lastTimeEnd
     let thisTimeEnd = dateUtil.parseDate(report.endDate).getTime()
-    let lastRenderItem = { name: '', data: [] }
-    let thisRenderItem = { name: '', data: [] }
+    let lastRenderItem = {
+      name: '',
+      data: []
+    }
+    let thisRenderItem = {
+      name: '',
+      data: []
+    }
     jQuery.each(data.article, function (i, item) {
       let node = {}
       let itemDate = dateUtil.parseDate(item.key)
@@ -283,15 +296,36 @@ exports.getArticleTrendChart = function (report) {
     for (let name in data) {
       let renderItem = {}
       renderItem.name = utils.resetArticleTypeName(name)
-      renderItem.data = data[name]
+      jQuery.each(data[name], function (i, item) {
+        let node = {}
+        node.name = item.key
+        node.value = item.value
+        renderItem.data.push(node)
+      })
       renderDataTemp.push(renderItem)
     }
   }
+
   let chartConfig = {
+    xAxisData: {
+      data: []
+    },
     legendData: {
       show: true
     },
   }
+
+  // 处理报告坐标轴
+  let categoryAxis = []
+  jQuery.each(renderDataTemp, function (i, item) {
+    if (item.data.length > categoryAxis.length) {
+      categoryAxis = item.data
+    }
+  })
+  jQuery.each(categoryAxis, function (i, item) {
+    chartConfig.xAxisData.data.push(item.name)
+  })
+
   let option = lineChart.getOption(renderDataTemp, chartConfig)
 
   renderData.option = option
@@ -306,9 +340,28 @@ exports.getArticleTrendChart = function (report) {
  */
 exports.getArticleHotPointChart = function (report) {
   var titleMust = ''
-  titleMust = report.mustWord.split('@')[0]
-  var renderData = {}, data
-  var params = {
+  if (report.mode === 'NORMAL') {
+    if (report.mustWord && report.mustWord !== '') {
+      titleMust = report.mustWord.split('@')[0]
+    } else {
+      titleMust = report.shouldWord.split('@')[0]
+    }
+  } else if (report.mode === 'ADVANCED') {
+    // TODO: 需要与后台确认高级模式时如何处理
+    if (report.mustWord && report.mustWord !== '') {
+      titleMust = report.mustWord.split('@')[0]
+    } else {
+      titleMust = report.shouldWord.split('@')[0]
+    }
+  }
+
+  let {
+    data,
+    description = '',
+    renderData = {}
+  } = {}
+
+  let params = {
     date: {
       startDate: report.startDate,
       endDate: report.endDate
@@ -332,12 +385,12 @@ exports.getArticleHotPointChart = function (report) {
   }
 
   data = articleServer.titleTimeAxis(params)
+  logger.info('getArticleHotPointChart data \n', data)
 
   data = data.content
   data = data.reverse()
-  var description = ''
-  var renderDataTemp = []
-  var chartConfig = {
+  let renderDataTemp = []
+  let chartConfig = {
     labelLength: 20,
     legendData: {
       show: false
@@ -365,22 +418,20 @@ exports.getArticleHotPointChart = function (report) {
       }
     }
   }
-  var renderItem = {
+  let renderItem = {
     data: []
   }
   renderItem.name = '舆论热点'
-  if (data.length > 0) {
-    data.forEach(function (item) {
-      var node = {}
-      node.name = item.title
-      node.value = item.docTotal
-      renderItem.data.push(node)
-    })
-  }
+  jQuery.each(data, function (i, item) {
+    var node = {}
+    node.name = item.title
+    node.value = item.docTotal
+    renderItem.data.push(node)
+  })
   renderDataTemp.push(renderItem)
   var option = barChart.getOption(renderDataTemp, chartConfig)
   // 将对象转为json格式，在此处设置labelLength, option为json
-  option = utils.replaceLabelLength(option, 25)
+  option = utils.replaceLabelLength(option, 20)
 
   if (data.length > 0) {
     // make description
@@ -417,7 +468,12 @@ exports.getArticleHotPointChart = function (report) {
  * @return renderData
  */
 exports.getNewsEmotionPieChart = function (report) {
-  var renderData = {}, data
+  let {
+    data,
+    description = '',
+    renderData = {}
+  } = {}
+
   let params = {
     date: {
       startDate: report.startDate,
@@ -432,77 +488,34 @@ exports.getNewsEmotionPieChart = function (report) {
     }
   }
   data = articleServer.getFilterAndGroupBy(params)
-
-  var total = 0,
-    seriesData = [],
-    legendData = [],
-    description = ''
-  if (data.length > 0) {
-    // 拼装 chart option
-    for (var item of data) {
-      var node = {}
-      node.name = utils.resetEmotionTypeName(item.key)
-      node.value = item.value
-      seriesData.push(node)
-      legendData.push(node.name)
+  logger.info('getNewsEmotionPieChart data \n', data)
+  let renderDataTemp = []
+  let chartConfig = {
+    legendData: {
+      show: true
     }
   }
-  var option = {
-    title: {
-      text: '情感分析',
-      left: 'center',
-      top: 'center',
-      textStyle: {
-        fontSize: 20,
-        fontWeight: 600
-      }
-    },
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)'
-    },
-    legend: {
-      x: 'right',
-      textStyle: {
-        fontSize: 15,
-        fontWeight: 500
-      },
-      data: legendData
-    },
-    series: [{
-      name: '情感类型',
-      type: 'pie',
-      radius: ['40%', '60%'],
-      label: {
-        normal: {
-          show: false,
-          textStyle: {
-            fontSize: 20
-          }
-        },
-        emphasis: {
-          show: true,
-          textStyle: {
-            fontSize: '30',
-            fontWeight: 'bold'
-          }
-        }
-      },
-      labelLine: {
-        normal: {
-          show: false
-        }
-      },
-      data: seriesData
-    }]
+  let total = 0
+  let renderItem = {
+    name: '',
+    data: []
   }
+  jQuery.each(data, function (i, item) {
+    var node = {}
+    node.name = utils.resetEmotionTypeName(item.key)
+    node.value = item.value
+    renderItem.data.push(node)
+  })
+  renderDataTemp.push(renderItem)
+
+  let option = pieChart.getOption(renderDataTemp, chartConfig)
 
   if (data.length > 0) {
-    for (let item of seriesData) {
+    for (let item of data) {
       total += item.value
     }
     var itemStr = ''
-    seriesData.forEach(function (item, i) {
+    data.forEach(function (item, i) {
       if (i === 0) {
         itemStr += '<span class="describe-redText">' + item.name +
           '</span>情感最多有<span class="describe-redText">' + item.value +
@@ -530,7 +543,11 @@ exports.getNewsEmotionPieChart = function (report) {
  * @return renderData
  */
 exports.getMediaBarChart = function (report) {
-  var renderData = {}, data
+  let {
+    data,
+    description = '',
+    renderData = {}
+  } = {}
   let params = {
     date: {
       startDate: report.startDate,
@@ -547,9 +564,10 @@ exports.getMediaBarChart = function (report) {
   }
 
   data = articleServer.getFilterAndGroupBy(params)
-  var description = ''
+  logger.info('getMediaBarChart data \n', data)
   var renderDataTemp = []
   var chartConfig = {
+    labelLength: 8,
     legendData: {
       show: false
     },
@@ -578,17 +596,15 @@ exports.getMediaBarChart = function (report) {
     }
   }
   var renderItem = {
+    name: '媒体名称',
     data: []
   }
-  renderItem.name = '媒体名称'
-  if (data.length > 0) {
-    data.forEach(function (item) {
-      var node = {}
-      node.name = item.key
-      node.value = item.value
-      renderItem.data.push(node)
-    })
-  }
+  jQuery.each(data, function (i, item) {
+    var node = {}
+    node.name = item.key
+    node.value = item.value
+    renderItem.data.push(node)
+  })
   renderDataTemp.push(renderItem)
   var option = barChart.getOption(renderDataTemp, chartConfig)
   // 将对象转为json格式，在此处设置labelLength, option为json
@@ -614,35 +630,271 @@ exports.getMediaBarChart = function (report) {
 
   return renderData
 }
+
+/**
+ * 热议网民
+ * @param report
+ * @return renderData
+ */
+exports.getHotAuthorChart = function (report) {
+  let {
+    data,
+    description = '',
+    renderData = {}
+  } = {}
+  let params = {
+    date: {
+      startDate: report.startDate,
+      endDate: report.endDate
+    },
+    groupName: 'author',
+    keyword: {
+      mustWord: report.mustWord,
+      shouldWord: report.shouldWord,
+      mustNotWord: report.mustNotWord,
+      expression: report.expression
+    },
+    type: ['weibo', 'bbs', 'bar']
+  }
+
+  data = articleServer.getFilterAndGroupBy(params)
+  logger.info('getMediaBarChart data \n', data)
+  let renderDataTemp = []
+  let chartConfig = {
+    legendData: {
+      show: false
+    },
+    gridData: {
+      top: 10,
+      bottom: 60
+    },
+    xAxisData: {
+      type: 'category',
+      axisLabel: {
+        rotate: 45,
+        textStyle: {
+          fontWeight: 700,
+          fontSize: 18
+        }
+      }
+    },
+    yAxisData: {
+      type: 'value',
+      axisLabel: {
+        textStyle: {
+          fontWeight: 700,
+          fontSize: 18
+        }
+      }
+    }
+  }
+  let renderItem = {
+    name: '热议网民',
+    data: []
+  }
+  jQuery.each(data, function (i, item) {
+    let node = {}
+    node.name = item.key
+    node.value = item.value
+    renderItem.data.push(node)
+  })
+  renderDataTemp.push(renderItem)
+  let option = barChart.getOption(renderDataTemp, chartConfig)
+  // 将对象转为json格式，在此处设置labelLength, option为json
+  option = utils.replaceLabelLength(option, 8)
+
+  if (data.length > 0) {
+    var itemStr = ''
+    data.forEach(function (item, i) {
+      if (i < 5) {
+        itemStr += '<span class="describe-redText">' + item.key + '(' + item.value + ')' + '</span>、'
+      }
+    })
+
+    var length = data.length > 5 ? 5 : data.length
+    itemStr = itemStr.substring(0, itemStr.length - 1)
+    description = '<div class="describe-text">对该主题的监测过程中，在论坛的参与话题讨论的网民中，讨论最为激烈的前<span class="describe-redText">' + length + '</span>名网民分别为' + itemStr + '。</div>'
+  } else {
+    description = '暂无相关数据'
+  }
+  renderData.option = option
+  renderData.description = description
+
+  return renderData
+}
+
+/**
+ * 微博关注人群地域分布图
+ * @param report
+ * @return renderData
+ */
+exports.getFocusPeopleMapChart = function (report) {
+  let {
+    data,
+    description = '',
+    renderData = {}
+  } = {}
+  let params = {
+    date: {
+      startDate: report.startDate,
+      endDate: report.endDate
+    },
+    groupName: 'area',
+    keyword: {
+      mustWord: report.mustWord,
+      shouldWord: report.shouldWord,
+      mustNotWord: report.mustNotWord,
+      expression: report.expression
+    },
+    type: ['weibo']
+  }
+
+  data = articleServer.getFilterAndGroupBy(params)
+  logger.info('getMediaBarChart data \n', data)
+  let renderDataTemp = []
+  let chartConfig = {
+    legendData: {
+      show: false
+    },
+    gridData: {
+      top: 10,
+      bottom: 60
+    },
+    xAxisData: {
+      type: 'category',
+      axisLabel: {
+        rotate: 45,
+        textStyle: {
+          fontWeight: 700,
+          fontSize: 18
+        }
+      }
+    },
+    yAxisData: {
+      type: 'value',
+      axisLabel: {
+        textStyle: {
+          fontWeight: 700,
+          fontSize: 18
+        }
+      }
+    }
+  }
+  let renderItem = {
+    name: '热议网民',
+    data: []
+  }
+  jQuery.each(data, function (i, item) {
+    let node = {}
+    node.name = item.key
+    node.value = item.value
+    renderItem.data.push(node)
+  })
+  renderDataTemp.push(renderItem)
+  let option = barChart.getOption(renderDataTemp, chartConfig)
+  // 将对象转为json格式，在此处设置labelLength, option为json
+  option = utils.replaceLabelLength(option, 8)
+
+  var maxCount = 10,
+    seriesData = []
+  if (data.length > 0) {
+    for (let item of data) {
+      var node = {}
+      node.name = item.key
+      node.value = item.value
+      seriesData.push(node)
+    }
+    seriesData.sort(function (a, b) {
+      return b.value - a.value
+    })
+    if (seriesData.length > 0) {
+      maxCount = seriesData[0].value
+    }
+  }
+  option = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c}'
+    },
+    visualMap: {
+      min: 0,
+      max: maxCount,
+      left: 'left',
+      top: 'bottom',
+      text: ['高', '低'], // 文本，默认为数值文本
+      calculable: true,
+      inRange: {
+        color: ['#B7EEEB', '#FEFDC7', '#FCC171', '#F27449', '#DB3B29'],
+      },
+    },
+    series: [{
+      name: '关注人数',
+      type: 'map',
+      mapType: 'china',
+      label: {
+        normal: {
+          show: true,
+        }
+      },
+      data: seriesData
+    }]
+  }
+  if (data.length > 0) {
+    var itemStr = ''
+    seriesData.forEach(function (item, i) {
+      if (i < 3) {
+        itemStr += '<span class="describe-redText">“' + item.name + '” (' + item.value + ')</span>、'
+      }
+    })
+    itemStr = itemStr.substring(0, itemStr.length - 1)
+    description = '<div class="describe-text">从关注人群的地域分布来看，对参与话题讨论的网民言论样本进行分析发现,关注地域主要集中在' +
+      itemStr + '等几个地区。</div>'
+  } else {
+    description = '暂无相关数据'
+  }
+  renderData.option = option
+  renderData.description = description
+
+  return renderData
+}
+
 /**
  * 热点词词云分析
  * @param report
  * @return renderData
  */
-exports.getArticleHotKeywordsChart = function (report) {
-  var renderData = {}, data
-  var params = {
-    limit: 50,
-    mustWord: report.mustWord,
-    mustNotWord: report.mustNotWord,
-    shouldWord: report.shouldWord,
-    s_date: report.startDate,
-    e_date: report.endDate
+exports.getKeywordsChart = function (report) {
+  let {
+    data,
+    description = '',
+    renderData = {}
+  } = {}
+  let params = {
+    date: {
+      startDate: report.startDate,
+      endDate: report.endDate
+    },
+    page: {
+      page: 50
+    },
+    keyword: {
+      mustWord: report.mustWord,
+      shouldWord: report.shouldWord,
+      mustNotWord: report.mustNotWord,
+      expression: report.expression
+    },
+    type: ['article']
   }
-
   data = articleServer.hotWords(params)
-
-  var keywords = [],
-    description = ''
-  if (data.length > 0) {
-    for (var item of data) {
-      var keyword = {}
-      keyword.keyword = item.key
-      keyword.score = item.value
-      keywords.push(keyword)
-    }
-  }
-  var option = {
+  logger.info('getArticleHotKeywordsChart data \n', data)
+  let keywords = []
+  jQuery.each(data, function (i, item) {
+    var keyword = {}
+    keyword.keyword = item.key
+    keyword.score = item.value
+    keywords.push(keyword)
+  })
+  let option = {
     data: keywords
   }
 
@@ -671,10 +923,29 @@ exports.getArticleHotKeywordsChart = function (report) {
  * @return renderData
  */
 exports.getSpecialRecommendArticles = function (report) {
-  var titleMust = '', data
-  titleMust = report.mustWord.split('@')[0]
-  var renderData = {}
-  var params = {
+  var titleMust = ''
+  if (report.mode === 'NORMAL') {
+    if (report.mustWord && report.mustWord !== '') {
+      titleMust = report.mustWord.split('@')[0]
+    } else {
+      titleMust = report.shouldWord.split('@')[0]
+    }
+  } else if (report.mode === 'ADVANCED') {
+    // TODO: 需要与后台确认高级模式时如何处理
+    if (report.mustWord && report.mustWord !== '') {
+      titleMust = report.mustWord.split('@')[0]
+    } else {
+      titleMust = report.shouldWord.split('@')[0]
+    }
+  }
+
+  let {
+    data,
+    description = '',
+    renderData = {}
+  } = {}
+
+  let params = {
     date: {
       startDate: report.startDate,
       endDate: report.endDate
@@ -698,8 +969,10 @@ exports.getSpecialRecommendArticles = function (report) {
   }
 
   data = articleServer.titleTimeAxis(params)
+  logger.info('getSpecialRecommendArticles data \n', data)
+
   data = data.content
-  var description = '', option = {}
+  let option = {}
   if (data.length > 0) {
     // make description
     var itemStr = ''

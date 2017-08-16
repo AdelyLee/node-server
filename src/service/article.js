@@ -41,7 +41,6 @@ exports.getFilterAndGroupBy = params => {
 exports.filterAndGroupByTime = (params, gapParams) => {
   logger.info('filterAndGroupByTime')
   var isReturn = false, renderData = {}
-  debugger
   request({
     url: `${base}/es/filterAndGroupByTime?` + qs.stringify(gapParams),
     method: 'post',
@@ -79,7 +78,7 @@ exports.titleTimeAxis = params => {
   }, function (error, response, data) {
     if (!error && response.statusCode === 200) {
       isReturn = true
-      logger.error('titleTimeAxis success!')
+      logger.info('titleTimeAxis success!')
       renderData = data
     } else {
       logger.error('titleTimeAxis error: ', error)
@@ -92,15 +91,15 @@ exports.titleTimeAxis = params => {
   return renderData
 }
 /**
- * 获取文章关键次 GET /es/hotWords.json
+ * 获取文章关键次 POST /es/hotWords
  * @param params
 */
 exports.hotWords = params => {
   logger.info('hotWords')
   var isReturn = false, renderData = {}
   request({
-    url: `${base}/es/hotWords.json?` + qs.stringify(params),
-    method: 'get',
+    url: `${base}/es/hotWords`,
+    method: 'post',
     json: true,
     headers: api.getRequestHeader(),
     body: params

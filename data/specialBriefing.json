@@ -12,7 +12,7 @@
       "title": "一、與情综述",
       "children": [],
       "description": "",
-      "method": "getSpecialSummarize"
+      "method": "getReportSummarize"
     },
     {
       "level": "level-one",
@@ -31,6 +31,17 @@
         },
         {
           "level": "level-two",
+          "title": "媒体报道走势",
+          "imageUrl": "",
+          "option": {},
+          "children": [],
+          "description": "",
+          "chartType": "line",
+          "chartId": "article-trend-chart",
+          "method": "getArticleTrendChart"
+        },
+        {
+          "level": "level-two",
           "title": "主流媒体报道统计",
           "imageUrl": "",
           "option": {},
@@ -42,15 +53,15 @@
         },
         {
           "level": "level-two",
-          "title": "媒体报道走势",
+          "title": "新闻情感正负面分析",
           "imageUrl": "",
           "option": {},
-          "children": [],
           "description": "",
-          "chartType": "line",
-          "chartId": "article-trend-chart",
-          "method": "getArticleTrendChart"
-        }
+          "children": [],
+          "chartType": "pie",
+          "chartId": "news-emotion-pie-chart",
+          "method": "getNewsEmotionPieChart"
+        }     
       ]
     },
     {
@@ -87,7 +98,7 @@
         },
         {
           "level": "level-two",
-          "title": "话题关注人群地域分布图",
+          "title": "微博关注人群地域分布图",
           "imageUrl": "",
           "option": {},
           "description": "",
@@ -105,7 +116,7 @@
           "children": [],
           "chartType": "keywordsCloud",
           "chartId": "comment-keywords-chart",
-          "method": "getCommentHotKeywordsChart"
+          "method": "getKeywordsChart"
         }
       ]
     },

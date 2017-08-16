@@ -11,6 +11,14 @@ let report = {
   shouldWord: '煤监局',
   mustNotWord: '',
   expression: '',
+  // type: 'MONTHLY'
+  type: 'SEPCIAL',
+  mode: 'NORMAL'
 }
-monthlyService.getArticleTypeChart(report)
-monthlyService.getArticleTrendChart(report)
+
+monthlyService.getReportSummarize(report)
+// monthlyService.getArticleTypeChart(report)
+// monthlyService.getArticleTrendChart(report)
+// monthlyService.getArticleHotPointChart(report)
+// monthlyService.getNewsEmotionPieChart(report)
+

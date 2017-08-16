@@ -1,15 +1,22 @@
 {
   "type": "BASE_MONTHLY",
-  "title": "安全生产與情月报",
-  "subTitle": "报告子标题",
-  "author": "人事司(宣教办)、通信信息中心编制",
-  "createTime": "2017年5月",
-  "issue": "2017年第5期",
-  "outline": "2月份,安全生产相关舆情约115700篇，比1月份减少了16.7%。 其中网络媒体是本月的舆情主阵地，微信占比较上月有所下降",
+  "title": "與情月报",
+  "subTitle": "",
+  "author": "",
+  "createTime": "",
+  "issue": "",
+  "outline": "",
   "briefingBody": [
     {
       "level": "level-one",
       "title": "一、與情综述",
+      "children": [],
+      "description": "",
+      "method": "getReportSummarize"
+    },
+    {
+      "level": "level-one",
+      "title": "二、媒体报道情况分析",
       "children": [
         {
           "level": "level-two",
@@ -24,7 +31,7 @@
         },
         {
           "level": "level-two",
-          "title": "(一) 安全生产與情趋势",
+          "title": "媒体报道走势",
           "imageUrl": "",
           "option": {},
           "children": [],
@@ -32,35 +39,6 @@
           "chartType": "line",
           "chartId": "article-trend-chart",
           "method": "getArticleTrendChart"
-        },
-        {
-          "level": "level-two",
-          "title": "(二) 安全生产新闻传播舆论热度",
-          "imageUrl": "",
-          "option": {},
-          "children": [],
-          "description": "",
-          "chartType": "bar",
-          "chartId": "news-hot-point",
-          "method": "getArticleHotPointChart"
-        },
-        {
-          "level": "level-two",
-          "title": "(三) 安全生产热点新闻解析",
-          "imageUrl": "",
-          "children": [],
-          "method": ""
-        },
-        {
-          "level": "level-two",
-          "title": "新闻情感正负面分析",
-          "imageUrl": "",
-          "option": {},
-          "description": "",
-          "children": [],
-          "chartType": "pie",
-          "chartId": "news-emotion-pie-chart",
-          "method": "getNewsEmotionPieChart"
         },
         {
           "level": "level-two",
@@ -75,28 +53,82 @@
         },
         {
           "level": "level-two",
-          "title": "热点词词云分析",
-          "imageUrl": "",
-          "description": "",
-          "children": [],
-          "chartType": "keywordsCloud",
-          "chartId": "hot-keywords-chart",
-          "method": "getArticleHotKeywordsChart"
-        },
-        {
-          "level": "level-two",
-          "title": "事故网络相关报道",
+          "title": "新闻情感正负面分析",
           "imageUrl": "",
           "option": {},
           "description": "",
           "children": [],
-          "chartType": "table",
-          "chartId": "accidents-table",
-          "method": "getAccidentTable"
+          "chartType": "pie",
+          "chartId": "news-emotion-pie-chart",
+          "method": "getNewsEmotionPieChart"
+        }     
+      ]
+    },
+    {
+      "level": "level-one",
+      "title": "三、舆论热点",
+      "children": [
+        {
+          "level": "level-two",
+          "title": "主流媒体舆论热点",
+          "imageUrl": "",
+          "option": {},
+          "children": [],
+          "description": "",
+          "chartType": "bar",
+          "chartId": "news-hot-point",
+          "method": "getArticleHotPointChart"
         }
       ]
+    },
+    {
+      "level": "level-one",
+      "title": "四、网民舆论情况",
+      "children": [
+        {
+          "level": "level-two",
+          "title": "热议网民",
+          "imageUrl": "",
+          "option": {},
+          "description": "",
+          "children": [],
+          "chartType": "bar",
+          "chartId": "hot-author-bar-chart",
+          "method": "getHotAuthorChart"
+        },
+        {
+          "level": "level-two",
+          "title": "微博关注人群地域分布图",
+          "imageUrl": "",
+          "option": {},
+          "description": "",
+          "children": [],
+          "chartType": "map",
+          "chartId": "focus-people-map-chart",
+          "method": "getFocusPeopleMapChart"
+        },
+        {
+          "level": "level-two",
+          "title": "网民评论热点词词云分析",
+          "imageUrl": "",
+          "option": {},
+          "description": "",
+          "children": [],
+          "chartType": "keywordsCloud",
+          "chartId": "comment-keywords-chart",
+          "method": "getKeywordsChart"
+        }
+      ]
+    },
+    {
+      "level": "level-one",
+      "title": "五、推荐阅读",
+      "description": "",
+      "children": [],
+      "method": "getSpecialRecommendArticles"
     }
   ],
   "summary": ""
 }
+
 
