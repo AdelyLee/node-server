@@ -249,7 +249,7 @@ exports.getArticleTrendChart = function (report) {
     dateType: 'day'
   }
   data = articleServer.filterAndGroupByTime(params, gapParams)
-  logger.info('filterAndGroupByTime data \n', data)
+  logger.info('getArticleTrendChart data \n', data)
   let renderDataTemp = []
   if (report.type === 'MONTHLY' || report.type === 'WEEKYLY') {
     let lastTimeStart = dateUtil.parseDate(report.trendStartData).getTime()
@@ -292,9 +292,9 @@ exports.getArticleTrendChart = function (report) {
     })
     renderDataTemp.push(lastRenderItem)
     renderDataTemp.push(thisRenderItem)
-  } else if (report.type === 'SEPCIAL') {
+  } else if (report.type === 'SPECIAL') {
     for (let name in data) {
-      let renderItem = {}
+      let renderItem = {name: '', data: []}
       renderItem.name = utils.resetArticleTypeName(name)
       jQuery.each(data[name], function (i, item) {
         let node = {}

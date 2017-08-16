@@ -12,7 +12,6 @@ const logger = log4js.getLogger('report')
  * @param params
 */
 exports.getReport = (params) => {
-  debugger
   let { isReturn = false, renderData } = {}
   request({
     url: `${base}/briefing/detail/type?` + qs.stringify(params),
@@ -21,9 +20,8 @@ exports.getReport = (params) => {
     headers: api.getRequestHeader(),
   }, function (error, response, data) {
     if (!error && response.statusCode === 200) {
-      logger.error('getReport get report success!')
+      logger.info('getReport get report success!')
       isReturn = true
-      debugger
       renderData = data
     } else {
       logger.error('getReport get report error: ', error)
@@ -36,7 +34,7 @@ exports.getReport = (params) => {
   return renderData
 }
 
-exports.getReportParam = function (req) {
+exports.getReportParam = function (reportParam) {
   var param = {
     type: '',
     mustWord: '', // 同现词
@@ -48,23 +46,23 @@ exports.getReportParam = function (req) {
   }
 
   // 获取页面请求参数，解析参数,获得报告关键词和时间．
-  param.type = req.query.type
-  if (req.query.type === 'SPECIAL') {
-    param.name = req.query.name
+  param.type = reportParam.type
+  if (reportParam.type === 'SPECIAL') {
+    param.name = reportParam.name
   }
-  param.startDate = dateUtil.formatDate(new Date(parseFloat(req.query.startTime)), 'yyyy-MM-dd')
-  param.endDate = dateUtil.formatDate(new Date(parseFloat(req.query.endTime)), 'yyyy-MM-dd')
-  param.shouldWord = req.query.shouldWord
-  param.mustWord = req.query.mustWord
-  param.mustNotWord = req.query.mustNotWord
+  param.startDate = dateUtil.formatDate(new Date(parseFloat(reportParam.startTime)), 'yyyy-MM-dd')
+  param.endDate = dateUtil.formatDate(new Date(parseFloat(reportParam.endTime)), 'yyyy-MM-dd')
+  param.shouldWord = reportParam.shouldWord
+  param.mustWord = reportParam.mustWord
+  param.mustNotWord = reportParam.mustNotWord
 
-  if (req.query.type === 'MONTHLY') {
-    param.trendStartData = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(req.query.startTime)), 'M', -1), 'yyyy-MM-dd')
-  } else if (req.query.type === 'WEEKLY') {
-    param.trendStartData = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(req.query.startTime)), 'd', -7), 'yyyy-MM-dd')
+  if (reportParam.type === 'MONTHLY') {
+    param.trendStartData = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(reportParam.startTime)), 'M', -1), 'yyyy-MM-dd')
+  } else if (reportParam.type === 'WEEKLY') {
+    param.trendStartData = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(reportParam.startTime)), 'd', -7), 'yyyy-MM-dd')
   }
 
-  logger.info('getReportParam success: ', param)
+  logger.info('getReportParam success: \n', param)
 
   return param
 }

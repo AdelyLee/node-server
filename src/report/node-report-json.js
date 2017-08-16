@@ -4,36 +4,33 @@
 var fs = require('fs')
 var Canvas = require('canvas')
 var builder = require('./BriefingBuilder')
-var monthlyReportService = require('./monthlyReport.js')
-var specialReportService = require('./specialReport.js')
 var node_charts = require('../charts/index')
 var reportService = require('../service/report')
+var report = require('./report')
+const log4js = require('../utils/logUtil')
 
-var service = monthlyReportService
+const logger = log4js.getLogger('build report')
+
 exports.getBriefingJson = function () {
   var param = global.reportParam
-  var baseReportType = ''
+  let {baseReportType = '', data, briefing} = {}
   // if type is 'monthly' the service is decisionReportService, or the type is 'special' this service is specialReportService.
   if (param.type === 'MONTHLY') {
-    service = monthlyReportService
     baseReportType = 'BASE_MONTHLY'
   } else if (param.type === 'SPECIAL') {
-    service = specialReportService
     baseReportType = 'BASE_SPECIAL'
   } else if (param.type === 'WEEKLY') {
-    service = monthlyReportService
     baseReportType = 'BASE_WEEKLY'
   }
 
-  // var briefing = {}
   var params = { type: baseReportType }
-  var briefing = reportService.getReport(params)
-
-  var briefingData = briefing
-  if (briefingData._id) {
-    delete briefingData._id
+  data = reportService.getReport(params)
+  logger.info('get report data \n', data)
+  data = data[0]
+  if (data._id) {
+    delete data._id
   }
-  var briefingObj = briefingData
+  var briefingObj = data
   // 处理数据
   briefingObj = mikeBriefing(briefingObj)
 
@@ -52,13 +49,13 @@ exports.getBriefingJson = function () {
   }
 
   // 获取报告 title, outline, summary, author, createTime, issue 信息．
-  briefing.title = service.getBriefingTitle(param)
-  // briefing.subTitle = service.getBriefingSubTitle(param)
-  // briefing.issue = service.getBriefingIssue(param)
-  // briefing.author = service.getBriefingAuthor(param)
-  // briefing.createTime = service.getBriefingCreateTime(param)
-  briefing.outline = service.getBriefingOutline(param)
-  briefing.summary = service.getBriefingSummary(param)
+  briefing.title = report.getBriefingTitle(param)
+  // briefing.subTitle = report.getBriefingSubTitle(param)
+  // briefing.issue = report.getBriefingIssue(param)
+  // briefing.author = report.getBriefingAuthor(param)
+  // briefing.createTime = report.getBriefingCreateTime(param)
+  briefing.outline = report.getBriefingOutline(param)
+  briefing.summary = report.getBriefingSummary(param)
 
   // 此处将对象转换为json需要支持function的转换
   return JSON.stringify(briefing, function (key, val) {
@@ -81,12 +78,13 @@ function mikeBriefing(briefingObj) {
 }
 
 function mikeBriefingCell(briefingCellObj) {
+  debugger
   // 获取数据
   var renderData = {}
   var method = briefingCellObj.method
 
   if (method !== '' && method !== undefined) {
-    renderData = service[method](global.reportParam)
+    renderData = report[method](global.reportParam)
     briefingCellObj.option = renderData.option
     briefingCellObj.description = renderData.description
     // according to the option create the image

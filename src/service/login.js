@@ -44,5 +44,3 @@ exports.login = () => {
 
   return renderData
 }
-
-this.login()

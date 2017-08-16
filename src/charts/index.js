@@ -1,7 +1,6 @@
 /**
  * Created by lyc on 17-5-19.
  */
-var logger = require('../utils/logUtil')
 var echarts = require('echarts')
 var d3 = require('d3')
 var d3LayoutCloud = require('d3-cloud')
@@ -10,6 +9,10 @@ var fs = require('fs')
 var svg2png = require('svg2png')
 var path = require('path')
 var MapChartUtil = require('./mapChartUtil')
+
+const log4js = require('../utils/logUtil')
+
+const logger = log4js.getLogger('chart')
 
 // 引用d3-node后台生成png图片
 const D3Node = require('d3-node')
@@ -70,9 +73,9 @@ const chart = {
     chart.setOption(config.option)
     try {
       fs.writeFileSync(config.path, chart.getDom().toBuffer())
-      logger.debug('Create Img:' + config.path)
+      logger.info('Create Img:' + config.path)
     } catch (err) {
-      logger.error('Error: Write File failed' + err.message)
+      logger.error('Error: Write File failed \n' + err.message)
     }
   },
 
@@ -148,9 +151,9 @@ const chart = {
         var svgBuffer = new Buffer(d3n.svgString(), 'utf-8')
         var outputBuffer = svg2png.sync(svgBuffer)
         fs.writeFileSync(config.path, outputBuffer)
-        logger.debug('Create Img:' + config.path)
+        logger.info('Create Img:' + config.path)
       } catch (err) {
-        logger.error('Error: Write File failed' + err.message)
+        logger.error('Error: Write File failed \n' + err.message)
       }
 
     }
