@@ -42,7 +42,8 @@ exports.getReportParam = function (reportParam) {
     shouldWord: '', // 关键词
     expression: '', // 关键词表达式
     startDate: '',
-    endDate: ''
+    endDate: '',
+    mode: '' // 关键词模式
   }
 
   // 获取页面请求参数，解析参数,获得报告关键词和时间．
@@ -55,6 +56,7 @@ exports.getReportParam = function (reportParam) {
   param.shouldWord = reportParam.shouldWord
   param.mustWord = reportParam.mustWord
   param.mustNotWord = reportParam.mustNotWord
+  param.mode = reportParam.mode
 
   if (reportParam.type === 'MONTHLY') {
     param.trendStartData = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(reportParam.startTime)), 'M', -1), 'yyyy-MM-dd')

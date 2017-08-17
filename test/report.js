@@ -18,18 +18,18 @@ let reportParam1 = {
   shouldWord: '煤监局',
   mustNotWord: '',
   expression: '',
-  type: 'MONTHLY',
+  // type: 'MONTHLY',
   // type: 'WEEKLY',
-  // type: 'SPECIAL',
+  type: 'SPECIAL',
   mode: 'NORMAL'
 }
 
 // monthlyService.getReportSummarize(reportParam1)
 // monthlyService.getArticleTypeChart(reportParam1)
 // monthlyService.getArticleTrendChart(reportParam1)
-// monthlyService.getArticleHotPointChart(reportParam1)
+monthlyService.getArticleHotPointChart(reportParam1)
 // monthlyService.getNewsEmotionPieChart(reportParam1)
-monthlyService.getFocusPeopleMapChart(reportParam1)
+// monthlyService.getFocusPeopleMapChart(reportParam1)
 
 let reportParam2 = {
   startTime: 1495987200000,

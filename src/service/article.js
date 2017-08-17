@@ -106,7 +106,7 @@ exports.hotWords = params => {
   }, function (error, response, data) {
     if (!error && response.statusCode === 200) {
       isReturn = true
-      logger.error('hotWords success!')
+      logger.info('hotWords success!')
       renderData = data
     } else {
       logger.error('hotWords error: ', error)

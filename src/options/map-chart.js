@@ -23,47 +23,56 @@ var jQuery = require('../utils/jqueryUtil')
  * @returns option
  */
 exports.getOption = function (data, chartConfig) {
-  let color = ['#21b6b9', '#eba954', '#0092ff', '#d74e67', '#27727B', '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD', '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0']
   chartConfig = chartConfig || {}
-  let { tooltipData = {}, legendData = {}, gridData = {}, seriesData } = chartConfig
-  let defaultTooltipData = { trigger: 'axis', axisPointer: { type: 'shadow' } }
-  let defaultLegendData = { x: 'center', y: 'top', data: [] }
-  let defaultGridData = { top: '8%', bottom: '20%', left: '5%', containLabel: true }
+  let {
+    tooltipData = {}, legendData = {}, visualMapData = {}, seriesData
+  } = chartConfig
+  let defaultTooltipData = {
+    trigger: 'item',
+    formatter: '{a} <br/>{b}: {c}'
+  }
+  let defaultLegendData = {
+    x: 'center',
+    y: 'top',
+    data: []
+  }
+  let defaultVisualMap = {
+    min: 0,
+    max: 100,
+    left: 'left',
+    top: 'bottom',
+    text: ['高', '低'], // 文本，默认为数值文本
+    calculable: true
+  }
   jQuery.extend(true, tooltipData, defaultTooltipData)
   jQuery.extend(true, legendData, defaultLegendData)
-  jQuery.extend(true, gridData, defaultGridData)
+  jQuery.extend(true, visualMapData, defaultVisualMap)
   let seriesRenderData = []
   let defaultSeriesItem = {
     name: '',
-    type: 'bar',
-    data: [],
-    barMaxWidth: '40',
-    itemStyle: {
-      normal: {
-        color: function (params) {
-          return color[params.dataIndex % 15]
-        }
-      }
-    }
+    type: 'map',
+    mapType: 'china',
+    data: []
   }
 
-  if (data.length > 0) {
-    data.forEach(function (item, i) {
-      let seriesItem = {}
+  jQuery.each(data, function (i, item) {
+    let seriesItem = {}
+    if (seriesData) {
+      jQuery.extend(true, seriesItem, defaultSeriesItem, seriesData[i])
+      seriesRenderData.push(seriesItem)
+    } else {
       jQuery.extend(true, seriesItem, defaultSeriesItem)
-      jQuery.extend(true, seriesItem, seriesData[i])
       seriesItem.name = item.name
       seriesItem.data = item.data
-      legendData.data.push(item.name)
       seriesRenderData.push(seriesItem)
-    })
-  }
+    }
+    legendData.data.push(item.name)
+  })
 
   return {
-    color: color,
     tooltip: tooltipData,
     legend: legendData,
-    grid: gridData,
+    visualMap: visualMapData,
     series: seriesRenderData
   }
 }

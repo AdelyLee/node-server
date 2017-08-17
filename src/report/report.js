@@ -81,6 +81,7 @@ exports.getReportSummarize = function (report) {
       expression: report.expression
     }
   }
+  debugger
   data = descriptionService.getReportOutline(params)
   logger.info('getReportSummarize data \n', data)
 
@@ -88,6 +89,7 @@ exports.getReportSummarize = function (report) {
     keywords = '', total = 0
   } = {}
   if (report.mode === 'NORMAL') {
+    debugger
     let mustWordArray = []
     let shouldWordArray = []
 
@@ -108,9 +110,9 @@ exports.getReportSummarize = function (report) {
     keywords = keywords.substring(0, keywords.length)
   } else if (report.mode === 'ADVANCED') {
     // TODO: 当选择高级模式时关键词如何处理
-    keywords = ''
+    keywords = '测试'
   }
-
+  debugger
   if (data.monthCount > 0) {
     total = data.monthCount
   }
@@ -140,10 +142,10 @@ exports.getReportSummarize = function (report) {
   titleItemStr = titleItemStr.substring(0, titleItemStr.length - 1)
   jQuery.each(data.label, function (i, item) {
     emotionItemStr += '<span class="describe-redText">' + utils.resetEmotionTypeName(item.key) + '</span>报道具有<span class="describe-redText">（' +
-      item.value + '）</span>条，所占比例为<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>'
+      item.value + '）</span>条，所占比例为<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>,'
   })
   emotionItemStr = emotionItemStr.substring(0, emotionItemStr.length - 1)
-  if (report.type === 'SPECAIL') {
+  if (report.type === 'SPECIAL') {
     reportTypeStr = '从<span class="describe-redText">' + report.startDate + '</span>至<span class="describe-redText">' +
       report.endDate + '</span>，对以<span class="describe-redText">“' + report.name + '”</span>为主题进行数据爬取，监控发现对该主题进行报道具有'
   } else {
@@ -221,7 +223,10 @@ exports.getArticleTypeChart = function (report) {
   if (data.length > 0) {
     // make ArticleTypeChart description
     let itemsStr = ''
-    jQuery.each(data, function (item) {
+    jQuery.each(data, function (i, item) {
+      total += item.value
+    })
+    jQuery.each(renderDataTemp[0].data, function (i, item) {
       itemsStr += '<span class="describe-redText">' + item.name + '</span>类媒体发现报道了<span class="describe-redText">' +
         item.value + '</span>次，所占比例<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>；'
     })
@@ -241,6 +246,10 @@ exports.getArticleTypeChart = function (report) {
  * @return renderData
  */
 exports.getArticleTrendChart = function (report) {
+  // 当报告类型为专报时，修改趋势图开始时间
+  if (report.type === 'SPECIAL') {
+    report.trendStartDate = report.startDate
+  }
   let {
     data,
     description = '',
@@ -311,6 +320,7 @@ exports.getArticleTrendChart = function (report) {
     renderDataTemp.push(lastRenderItem)
     renderDataTemp.push(thisRenderItem)
   } else if (report.type === 'SPECIAL') {
+    debugger
     for (let name in data) {
       let renderItem = {
         name: '',
@@ -612,6 +622,7 @@ exports.getArticleHotPointChart = function (report) {
   var option = barChart.getOption(renderDataTemp, chartConfig)
   // 将对象转为json格式，在此处设置labelLength, option为json
   option = utils.replaceLabelLength(option, 20)
+  logger.debug('播舆论热度 option \n', option)
 
   if (data.length > 0) {
     // make description
@@ -693,16 +704,16 @@ exports.getNewsEmotionPieChart = function (report) {
     jQuery.each(data, function (i, item) {
       total += item.value
     })
-    jQuery.each(data, function (i, item) {
+    jQuery.each(renderDataTemp[0].data, function (i, item) {
       total += item.value
       if (i === 0) {
         itemStr += '<span class="describe-redText">' + item.name +
           '</span>情感最多有<span class="describe-redText">' + item.value +
-          '</span>条， 所占比例为<span class="describe-redText">(' + (item.value * 100 / total).toFixed(2) + '%)</span>，'
+          '</span>条， 所占比例为<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>，'
       }
       if (i > 0) {
         itemStr += '<span class="describe-redText">' + item.name + '</span>情感数据有<span class="describe-redText">' +
-          item.value + '</span>条,所占比例为<span class="describe-redText">(' + (item.value * 100 / total).toFixed(2) + '%)' + '</span>，'
+          item.value + '</span>条,所占比例为<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%' + '</span>，'
       }
     })
     itemStr = itemStr.substring(0, itemStr.length - 1)
@@ -958,7 +969,7 @@ exports.getFocusPeopleMapChart = function (report) {
     }
   }
   let renderItem = {
-    name: '热议网民',
+    name: '关注人数',
     data: []
   }
   jQuery.each(data, function (i, item) {
@@ -970,55 +981,11 @@ exports.getFocusPeopleMapChart = function (report) {
   renderDataTemp.push(renderItem)
   let option = mapChart.getOption(renderDataTemp, chartConfig)
 
-  var maxCount = 10,
-    seriesData = []
-  if (data.length > 0) {
-    for (let item of data) {
-      var node = {}
-      node.name = item.key
-      node.value = item.value
-      seriesData.push(node)
-    }
-    seriesData.sort(function (a, b) {
-      return b.value - a.value
-    })
-    if (seriesData.length > 0) {
-      maxCount = seriesData[0].value
-    }
-  }
-  option = {
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c}'
-    },
-    visualMap: {
-      min: 0,
-      max: maxCount,
-      left: 'left',
-      top: 'bottom',
-      text: ['高', '低'], // 文本，默认为数值文本
-      calculable: true,
-      inRange: {
-        color: ['#B7EEEB', '#FEFDC7', '#FCC171', '#F27449', '#DB3B29'],
-      },
-    },
-    series: [{
-      name: '关注人数',
-      type: 'map',
-      mapType: 'china',
-      label: {
-        normal: {
-          show: true,
-        }
-      },
-      data: seriesData
-    }]
-  }
   if (data.length > 0) {
     var itemStr = ''
-    seriesData.forEach(function (item, i) {
+    jQuery.each(renderDataTemp[0].data, function (i, item) {
       if (i < 3) {
-        itemStr += '<span class="describe-redText">“' + item.name + '” (' + item.value + ')</span>、'
+        itemStr += '<span class="describe-redText">“' + item.name + '”</span>关注人数<span class="describe-redText">(' + item.value + ')</span>人、'
       }
     })
     itemStr = itemStr.substring(0, itemStr.length - 1)

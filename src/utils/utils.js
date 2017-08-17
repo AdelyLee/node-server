@@ -5,6 +5,7 @@
 const utils = {
   resetArticleTypeName: function (source) {
     var target = ''
+    source = source.toLowerCase()
     switch (source) {
       case 'news':
         target = '新闻'
@@ -78,6 +79,7 @@ const utils = {
 
     return date
   },
+
   replaceLabelLength: function (option, labelLength) {
     // 将对象转为json格式，在此处设置labelLength
     option = JSON.stringify(option, function (key, val) {

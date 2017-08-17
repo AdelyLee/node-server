@@ -82,6 +82,7 @@ exports.getOption = function (data, chartConfig) {
         seriesItem.data = item.data
         seriesRenderData.push(seriesItem)
       }
+      legendData.data.push(item.name)
       if (item.data.length > 0) {
         item.data.forEach(function (obj) {
           if (jQuery.inArray(obj.key, defaultCategoryAxisData.data) === -1) {
