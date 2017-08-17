@@ -523,7 +523,7 @@ exports.getArticleTrendChart = function (report) {
     description = '暂无相关数据'
   }
   renderData.option = option
-  renderData.option = description
+  renderData.description = description
 
   return renderData
 }
