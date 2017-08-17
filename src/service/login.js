@@ -7,7 +7,7 @@ const deasync = require('deasync')
 const base = require('../utils/common')
 const log4js = require('../utils/logUtil')
 
-const logger = log4js.getLogger('login')
+const logger = log4js.getLogger('login service')
 /**
  * 用户登录接口 POST /login/login
  * @param params

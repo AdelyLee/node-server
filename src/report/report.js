@@ -1,13 +1,14 @@
 /**
  * Created by lyc on 17-5-18.
  */
-const articleServer = require('../service/article')
-const descriptionServer = require('../service/description')
+const articleService = require('../service/article')
+const descriptionService = require('../service/description')
 const utils = require('../utils/utils')
 const dateUtil = require('../utils/dateUtil')
 const pieChart = require('../options/pie-chart')
 const lineChart = require('../options/line-chart')
 const barChart = require('../options/bar-chart')
+const mapChart = require('../options/map-chart')
 const jQuery = require('../utils/jqueryUtil')
 const log4js = require('../utils/logUtil')
 
@@ -15,6 +16,7 @@ const logger = log4js.getLogger('report')
 /**
  * 获取报告标题
  * @param report
+ * @return title
  */
 exports.getBriefingTitle = function (report) {
   var title = '',
@@ -75,74 +77,86 @@ exports.getReportSummarize = function (report) {
     keyword: {
       mustWord: report.mustWord,
       shouldWord: report.shouldWord,
-      mustNotWord: report.mustNotWord
+      mustNotWord: report.mustNotWord,
+      expression: report.expression
     }
   }
-  data = descriptionServer.getReportOutline(params)
+  data = descriptionService.getReportOutline(params)
   logger.info('getReportSummarize data \n', data)
-  var keywords = '',
-    mustWordArray = [],
-    shouldWordArray = []
-  if (report.mustWord) {
-    mustWordArray = report.mustWord.split('@')
+
+  let {
+    keywords = '', total = 0
+  } = {}
+  if (report.mode === 'NORMAL') {
+    let mustWordArray = []
+    let shouldWordArray = []
+
+    if (report.mustWord) {
+      mustWordArray = report.mustWord.split('@')
+    }
+    if (report.shouldWord) {
+      shouldWordArray = report.shouldWord.split('@')
+    }
+    if (mustWordArray.length > 2) {
+      mustWordArray = mustWordArray.slice(0, 2)
+    }
+    if (shouldWordArray.length > 2) {
+      shouldWordArray = shouldWordArray.slice(0, 2)
+    }
+
+    keywords = mustWordArray.join('、') + '、' + shouldWordArray.join('、')
+    keywords = keywords.substring(0, keywords.length)
+  } else if (report.mode === 'ADVANCED') {
+    // TODO: 当选择高级模式时关键词如何处理
+    keywords = ''
   }
-  if (report.shouldWord) {
-    shouldWordArray = report.shouldWord.split('@')
-  }
-  if (mustWordArray.length > 2) {
-    mustWordArray = mustWordArray.slice(0, 2)
-  }
-  if (shouldWordArray.length > 2) {
-    shouldWordArray = shouldWordArray.slice(0, 2)
-  }
-  keywords = mustWordArray.join('、') + '、' + shouldWordArray.join('、')
-  keywords = keywords.substring(0, keywords.length)
-  var total = 0
+
   if (data.monthCount > 0) {
     total = data.monthCount
   }
-  var typeItemStr = '',
-    siteItemStr = '',
-    titleItemStr = '',
-    emotionItemStr = ''
-  if (data.maxType.length > 0) {
-    data.maxType.forEach(function (item, i) {
-      if (i < 3) {
-        typeItemStr += '<span class="describe-redText">' + utils.resetArticleTypeName(item.key) + '（' +
-          item.value + '）</span>条、'
-      }
-    })
-  }
+  let {
+    typeItemStr = '', siteItemStr = '', titleItemStr = '', emotionItemStr = '', reportTypeStr = ''
+  } = {}
+  jQuery.each(data.maxType, function (i, item) {
+    if (i < 3) {
+      typeItemStr += '<span class="describe-redText">' + utils.resetArticleTypeName(item.key) + '（' +
+        item.value + '）</span>条、'
+    }
+  })
   typeItemStr = typeItemStr.substring(0, typeItemStr.length - 1)
-  if (data.maxSite.length > 0) {
-    data.maxSite.forEach(function (item, i) {
-      if (i < 3) {
-        siteItemStr += '<span class="describe-redText">' + item.key + '（' +
-          item.value + '）</span>条、'
-      }
-    })
-  }
+  jQuery.each(data.maxSite, function (i, item) {
+    if (i < 3) {
+      siteItemStr += '<span class="describe-redText">' + item.key + '（' +
+        item.value + '）</span>条、'
+    }
+  })
   siteItemStr = siteItemStr.substring(0, siteItemStr.length - 1)
-  if (data.maxTitle.length > 0) {
-    data.maxTitle.forEach(function (item, i) {
-      if (i < 3) {
-        titleItemStr += '以<span class="describe-redText">“' + item.key + '”</span>标题的报道具有（' +
-          item.value + '）条、'
-      }
-    })
-  }
+  jQuery.each(data.maxTitle, function (i, item) {
+    if (i < 3) {
+      titleItemStr += '以<span class="describe-redText">“' + item.key + '”</span>标题的报道具有（' +
+        item.value + '）条、'
+    }
+  })
   titleItemStr = titleItemStr.substring(0, titleItemStr.length - 1)
-  if (data.label.length > 0) {
-    data.label.forEach(function (item) {
-      emotionItemStr += '<span class="describe-redText">' + utils.resetEmotionTypeName(item.key) + '</span>报道具有<span class="describe-redText">（' +
-        item.value + '）</span>条，所占比例为<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>'
-    })
-  }
+  jQuery.each(data.label, function (i, item) {
+    emotionItemStr += '<span class="describe-redText">' + utils.resetEmotionTypeName(item.key) + '</span>报道具有<span class="describe-redText">（' +
+      item.value + '）</span>条，所占比例为<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>'
+  })
   emotionItemStr = emotionItemStr.substring(0, emotionItemStr.length - 1)
-  description = '<div class="describe-text"><div class="paragraph">根据以<span class="describe-redText">“' + keywords + '”</span>等关键字的进行互联网监控，从<span class="describe-redText">' + report.startDate + '</span>至<span class="describe-redText">' +
-    report.endDate + '</span>，对以<span class="describe-redText">“' + report.name + '”</span>为主题进行数据爬取，监控发现对该主题进行报道具有<span class="describe-redText">' + total + '</span>条，其中包含' + typeItemStr +
+  if (report.type === 'SPECAIL') {
+    reportTypeStr = '从<span class="describe-redText">' + report.startDate + '</span>至<span class="describe-redText">' +
+      report.endDate + '</span>，对以<span class="describe-redText">“' + report.name + '”</span>为主题进行数据爬取，监控发现对该主题进行报道具有'
+  } else {
+    let reportTime = ''
+    if (report.type === 'MONTHLY') {
+      reportTime = '本月'
+    } else if (report.type === 'WEEKLY') {
+      reportTime = '本周'
+    }
+    reportTypeStr = '<span class="describe-redText">' + reportTime + '</span>，监控发现对该系列关键词进行报道具有'
+  }
+  description = '<div class="describe-text"><div class="paragraph">根据以<span class="describe-redText">“' + keywords + '”</span>等关键字的进行互联网监控，' + reportTypeStr + '<span class="describe-redText">' + total + '</span>条，其中包含' + typeItemStr +
     '</span>。根据报道数量排序，对该主题报道最多的为' + siteItemStr + '。</div><div class="paragraph">对该主题，媒体采用不同的标题方式进行报道，包括' + titleItemStr + '。</div><div class="paragraph">通过对以上所有报道进行正负面舆情分析，其中' + emotionItemStr + '。</div></div>'
-
 
   renderData.description = description
   renderData.option = option
@@ -183,7 +197,7 @@ exports.getArticleTypeChart = function (report) {
       expression: report.expression
     }
   }
-  data = articleServer.getFilterAndGroupBy(params)
+  data = articleService.getFilterAndGroupBy(params)
   logger.info('getArticleTypeChart data \n', data)
   let chartConfig = {
     legendData: {
@@ -203,11 +217,13 @@ exports.getArticleTypeChart = function (report) {
   })
   renderDataTemp.push(renderItem)
   let option = pieChart.getOption(renderDataTemp, chartConfig)
+
   if (data.length > 0) {
     // make ArticleTypeChart description
-    var itemsStr = ''
+    let itemsStr = ''
     jQuery.each(data, function (item) {
-      itemsStr += '<span class="describe-redText">' + item.name + '</span>类媒体发现报道了<span class="describe-redText">' + item.value + '</span>次，所占比例<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>；'
+      itemsStr += '<span class="describe-redText">' + item.name + '</span>类媒体发现报道了<span class="describe-redText">' +
+        item.value + '</span>次，所占比例<span class="describe-redText">' + (item.value * 100 / total).toFixed(2) + '%</span>；'
     })
     itemsStr = itemsStr.substring(0, itemsStr.length - 1) + '。'
     description = '<div class="describe-text">根据互联网实时监控的所有抓取的数据按媒体报道载体分析，一共具有媒体报道<span class="describe-redText">' + total + '</span>次，' + itemsStr + '</div>'
@@ -232,7 +248,7 @@ exports.getArticleTrendChart = function (report) {
   } = {}
   let params = {
     date: {
-      startDate: report.trendStartData,
+      startDate: report.trendStartDate,
       endDate: report.endDate
     },
     groupName: 'type',
@@ -248,11 +264,11 @@ exports.getArticleTrendChart = function (report) {
     gap: '1',
     dateType: 'day'
   }
-  data = articleServer.filterAndGroupByTime(params, gapParams)
+  data = articleService.filterAndGroupByTime(params, gapParams)
   logger.info('getArticleTrendChart data \n', data)
   let renderDataTemp = []
-  if (report.type === 'MONTHLY' || report.type === 'WEEKYLY') {
-    let lastTimeStart = dateUtil.parseDate(report.trendStartData).getTime()
+  if (report.type === 'MONTHLY' || report.type === 'WEEKLY') {
+    let lastTimeStart = dateUtil.parseDate(report.trendStartDate).getTime()
     let lastTimeEnd = dateUtil.parseDate(report.startDate).getTime()
     let thisTimeStart = lastTimeEnd
     let thisTimeEnd = dateUtil.parseDate(report.endDate).getTime()
@@ -277,6 +293,7 @@ exports.getArticleTrendChart = function (report) {
           node.name = utils.resetDate(itemDate.getDay())
         }
         node.value = item.value
+        node.date = item.key
         lastRenderItem.data.push(node)
       } else if (itemTime >= thisTimeStart && itemTime < thisTimeEnd) {
         if (report.type === 'MONTHLY') {
@@ -287,6 +304,7 @@ exports.getArticleTrendChart = function (report) {
           node.name = utils.resetDate(itemDate.getDay())
         }
         node.value = item.value
+        node.date = item.key
         thisRenderItem.data.push(node)
       }
     })
@@ -294,11 +312,15 @@ exports.getArticleTrendChart = function (report) {
     renderDataTemp.push(thisRenderItem)
   } else if (report.type === 'SPECIAL') {
     for (let name in data) {
-      let renderItem = {name: '', data: []}
+      let renderItem = {
+        name: '',
+        data: []
+      }
       renderItem.name = utils.resetArticleTypeName(name)
       jQuery.each(data[name], function (i, item) {
         let node = {}
         node.name = item.key
+        node.date = item.key
         node.value = item.value
         renderItem.data.push(node)
       })
@@ -315,7 +337,7 @@ exports.getArticleTrendChart = function (report) {
     },
   }
 
-  // 处理报告坐标轴
+  // 处理报告趋势图横轴坐标显示的lable
   let categoryAxis = []
   jQuery.each(renderDataTemp, function (i, item) {
     if (item.data.length > categoryAxis.length) {
@@ -328,18 +350,182 @@ exports.getArticleTrendChart = function (report) {
 
   let option = lineChart.getOption(renderDataTemp, chartConfig)
 
+  data = data.article
+  if (data.length > 0) {
+    if (report.type === 'MONTHLY' || report.type === 'WEEKLY') {
+      let {
+        lastTotal = 0, thisTotal = 0
+      } = {}
+      let {
+        waveResultStr = '', timeType = '', lastTimeStr = '', thisTimeStr = '', hotStartDateTemp = '', heightStr = '',
+          thisMaxDay = '', thisMaxData = '', thisMinDay = '', thisMinData = '', lastMaxDay = '', lastMaxData = '',
+          lastMinDay = '', lastMinData = ''
+      } = {}
+      let lastTimeItems = []
+      let thisTimeItems = []
+      lastTimeItems = renderDataTemp[0].data
+      thisTimeItems = renderDataTemp[1].data
+      jQuery.each(lastTimeItems, function (i, item) {
+        lastTotal += item.value
+      })
+      jQuery.each(thisTimeItems, function (i, item) {
+        thisTotal += item.value
+      })
+      let wave = descriptionService.getTrendOfOpinion(lastTimeItems, thisTimeItems)
+      if (wave) {
+        waveResultStr = '波动更大,个别话题引起舆情热度较大起伏'
+      } else {
+        waveResultStr = '更平稳一些,但是个别话题引起舆情热度较大起伏'
+      }
+      // 获取趋势图中，当月、当周或上月、上周时段内最大最小值的Index
+      lastTimeItems = lastTimeItems.sort(function (a, b) {
+        return b.value - a.value
+      })
+      thisTimeItems = thisTimeItems.sort(function (a, b) {
+        return b.value - a.value
+      })
+
+      if (report.type === 'MONTHLY') {
+        timeType = '月'
+        let lastDate = dateUtil.parseDate(report.trendStartDate)
+        let thisDate = dateUtil.addDate(dateUtil.parseDate(report.trendStartDate), 'M', 1)
+        thisTimeStr = parseInt(thisDate.getMonth() + 1) + timeType
+        lastTimeStr = parseInt(lastDate.getMonth() + 1) + timeType
+        hotStartDateTemp = thisTimeItems[0].date
+
+        thisMaxDay = thisTimeItems[0].name + '日'
+        thisMaxData = thisTimeItems[0].value
+        thisMinDay = thisTimeItems[thisTimeItems.length - 1].name + '日'
+        thisMinData = thisTimeItems[thisTimeItems.length - 1].value
+        lastMaxDay = lastTimeItems[0].name + '日'
+        lastMaxData = lastTimeItems[0].value
+        lastMinDay = lastTimeItems[lastTimeItems.length - 1].name + '日'
+        lastMinData = lastTimeItems[lastTimeItems.length - 1].value
+      } else if (report.type === 'WEEKLY') {
+        timeType = '周'
+        thisTimeStr = '本' + timeType
+        lastTimeStr = '上' + timeType
+        hotStartDateTemp = thisTimeItems[0].date
+
+        thisMaxDay = thisTimeItems[0].name
+        thisMaxData = thisTimeItems[0].value
+        thisMinDay = thisTimeItems[thisTimeItems.length - 1].name
+        thisMinData = thisTimeItems[thisTimeItems.length - 1].value
+        lastMaxDay = lastTimeItems[0].name
+        lastMaxData = lastTimeItems[0].value
+        lastMinDay = lastTimeItems[lastTimeItems.length - 1].name
+        lastMinData = lastTimeItems[lastTimeItems.length - 1].value
+      }
+
+      let waveStr = '从舆情热度趋势来看, <span class="describe-redText">' + thisTimeStr +
+        '</span>的舆情热度与<span class="describe-redText">' + lastTimeStr +
+        '</span>相比' + waveResultStr + '。'
+
+      let hotStartDate = dateUtil.formatDate(dateUtil.parseDate(hotStartDateTemp), 'yyyy-MM-dd')
+      let hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd')
+      let params = {
+        date: {
+          startDate: hotStartDate,
+          endDate: hotEndDate
+        },
+        groupName: 'title.raw',
+        keyword: {
+          mustWord: report.mustWord,
+          shouldWord: report.shouldWord,
+          mustNotWord: report.mustNotWord,
+          expression: report.expression
+        }
+      }
+      let heightData = articleService.getFilterAndGroupBy(params)
+      let heightTempStr = ''
+      jQuery.each(heightData, function (i, item) {
+        if (i < 3) {
+          heightTempStr += '<span class="describe-redText">＂' + item.key +
+            '＂</span>话题产生<span class="describe-redText">' + item.value + '</span>篇相关报道，'
+        }
+      })
+      heightStr = '<span class="describe-redText">' + thisMaxDay + '</span>，' + heightTempStr +
+        '促使当日出现本' + timeType + '的舆情高峰。'
+      // make ArticleTypeChart description
+      description = '<div class="describe-text">' + waveStr + '<span class="describe-redText">' +
+        thisTimeStr + '</span>中，共抓取互联网数据<span class="describe-redText">' + thisTotal +
+        '</span>条，其中<span class="describe-redText">' + thisMaxDay +
+        '</span>热度最高，共有数据<span class="describe-redText">' +
+        thisMaxData + '</span>条。' + heightStr + '<span class="describe-redText">' +
+        thisMinDay + '</span>最低，共有数据<span class="describe-redText">' + thisMinData + '</span>条。' +
+        '环比<span class="describe-redText">' + lastTimeStr + '</span>，共抓取互联网数据' +
+        '<span class="describe-redText">' + lastTotal + '</span>条，其中<span class="describe-redText">' + lastMaxDay +
+        '</span>热度最高，共有数据<span class="describe-redText">' + lastMaxData + '</span>条。' +
+        '<span class="describe-redText">' + lastMinDay +
+        '</span>日最低，共有数据<span class="describe-redText">' + lastMinData + '</span>条。</div>'
+      logger.info('getArticleTrendChart description \n', description)
+
+    } else if (report.type === 'SPECAIL') {
+      let renderItems = renderDataTemp[0].data
+      let {
+        total = 0, maxDate = '', minDate = '', maxData = 0, minData = 0, heightStr = ''
+      } = {}
+      jQuery.each(renderItems, function (i, item) {
+        total += item.value
+      })
+      // 获取趋势图中，当月、当周或上月、上周时段内最大最小值的Index
+      renderItems = renderItems.sort(function (a, b) {
+        return b.value - a.value
+      })
+      maxDate = renderItems[0].date
+      maxData = renderItems[0].value
+      minDate = renderItems[renderItems.length - 1].date
+      maxData = renderItems[renderItems.length - 1].value
+      let hotStartDate = dateUtil.formatDate(dateUtil.parseDate(maxDate), 'yyyy-MM-dd')
+      let hotEndDate = dateUtil.formatDate(dateUtil.addDate(dateUtil.parseDate(hotStartDate), 'd', 1), 'yyyy-MM-dd')
+      let params = {
+        date: {
+          startDate: hotStartDate,
+          endDate: hotEndDate
+        },
+        groupName: 'title.raw',
+        keyword: {
+          mustWord: report.mustWord,
+          shouldWord: report.shouldWord,
+          mustNotWord: report.mustNotWord,
+          expression: report.expression
+        }
+      }
+      let heightData = articleService.getFilterAndGroupBy(params)
+      let heightTempStr = ''
+      jQuery.each(heightData, function (i, item) {
+        if (i < 3) {
+          heightTempStr += '<span class="describe-redText">＂' + item.key +
+            '＂</span>话题产生<span class="describe-redText">' + item.value + '</span>篇相关报道，'
+        }
+      })
+      heightStr = '<span class="describe-redText">在' + maxDate + '</span>日，' + heightTempStr +
+        '促使当日出现本时间段的舆情高峰。'
+
+      // make ArticleTypeChart description
+      description = '<div class="describe-text">对所有报道的' +
+        '<span class="describe-redText">' + total + '</span>条数据进行按时间段走势进行分析（按天），得出<span class="describe-redText">' + maxDate +
+        '</span>日热度最高，共有数据<span class="describe-redText">' + maxData + '</span>条。' +
+        heightStr + '<span class="describe-redText">' + minDate +
+        '</span>日最低，共有数据<span class="describe-redText">' + minData + '</span>条。</div>'
+    }
+  } else {
+    description = '暂无相关数据'
+  }
   renderData.option = option
   renderData.option = description
+
   return renderData
 }
-
 /**
  * 播舆论热度
  * @param report
  * @return renderData
  */
 exports.getArticleHotPointChart = function (report) {
-  var titleMust = ''
+  let {
+    titleMust = '', data, description = '', renderData = {}
+  } = {}
   if (report.mode === 'NORMAL') {
     if (report.mustWord && report.mustWord !== '') {
       titleMust = report.mustWord.split('@')[0]
@@ -354,12 +540,6 @@ exports.getArticleHotPointChart = function (report) {
       titleMust = report.shouldWord.split('@')[0]
     }
   }
-
-  let {
-    data,
-    description = '',
-    renderData = {}
-  } = {}
 
   let params = {
     date: {
@@ -384,7 +564,7 @@ exports.getArticleHotPointChart = function (report) {
     type: ['news']
   }
 
-  data = articleServer.titleTimeAxis(params)
+  data = articleService.titleTimeAxis(params)
   logger.info('getArticleHotPointChart data \n', data)
 
   data = data.content
@@ -419,9 +599,9 @@ exports.getArticleHotPointChart = function (report) {
     }
   }
   let renderItem = {
+    name: '舆论热点',
     data: []
   }
-  renderItem.name = '舆论热点'
   jQuery.each(data, function (i, item) {
     var node = {}
     node.name = item.title
@@ -435,24 +615,26 @@ exports.getArticleHotPointChart = function (report) {
 
   if (data.length > 0) {
     // make description
-    var dataMonth = ''
+    let dataMonth = ''
     if (report.type === 'MONTHLY') {
       dataMonth = '本月'
     } else if (report.type === 'WEEKLY') {
       dataMonth = '本周'
+    } else if (report.type === 'SPECAIL') {
+      dataMonth = '针对该专题舆情'
     }
     var itemStr = ''
     data = data.reverse()
-    data.forEach(function (item, i) {
-      if (item.title.length > 30) {
-        item.title = item.title.substring(0, 30) + '...'
+    jQuery.each(data, function (i, item) {
+      if (item.title.length > 35) {
+        item.title = item.title.substring(0, 35) + '...'
       }
       if (i < 3) {
-        itemStr += '<span class="describe-redText">“' + item.title + '” (' + item.docTotal + ')</span>、'
+        itemStr += '<span class="describe-redText">“' + item.title + '” （' + item.docTotal + '次）</span>、'
       }
     })
     itemStr = itemStr.substring(0, itemStr.length - 1)
-    description = '<div class="describe-text">' + dataMonth + '媒体报道情况，从其具体内容方面也可以发现，主要话题集中在' +
+    description = '<div class="describe-text">' + dataMonth + '媒体报道情况，从其具体内容方面也可以发现，主要话题主要集中在' +
       itemStr + '等几个方面。</div>'
   } else {
     description = '暂无相关数据'
@@ -469,11 +651,8 @@ exports.getArticleHotPointChart = function (report) {
  */
 exports.getNewsEmotionPieChart = function (report) {
   let {
-    data,
-    description = '',
-    renderData = {}
+    total = 0, data, description = '', renderData = {}
   } = {}
-
   let params = {
     date: {
       startDate: report.startDate,
@@ -487,7 +666,7 @@ exports.getNewsEmotionPieChart = function (report) {
       expression: report.expression
     }
   }
-  data = articleServer.getFilterAndGroupBy(params)
+  data = articleService.getFilterAndGroupBy(params)
   logger.info('getNewsEmotionPieChart data \n', data)
   let renderDataTemp = []
   let chartConfig = {
@@ -495,9 +674,8 @@ exports.getNewsEmotionPieChart = function (report) {
       show: true
     }
   }
-  let total = 0
   let renderItem = {
-    name: '',
+    name: '情感分析',
     data: []
   }
   jQuery.each(data, function (i, item) {
@@ -511,24 +689,25 @@ exports.getNewsEmotionPieChart = function (report) {
   let option = pieChart.getOption(renderDataTemp, chartConfig)
 
   if (data.length > 0) {
-    for (let item of data) {
+    let itemStr = ''
+    jQuery.each(data, function (i, item) {
       total += item.value
-    }
-    var itemStr = ''
-    data.forEach(function (item, i) {
+    })
+    jQuery.each(data, function (i, item) {
+      total += item.value
       if (i === 0) {
         itemStr += '<span class="describe-redText">' + item.name +
           '</span>情感最多有<span class="describe-redText">' + item.value +
-          '(' + (item.value * 100 / total).toFixed(2) + '%)' + '</span>，'
+          '</span>条， 所占比例为<span class="describe-redText">(' + (item.value * 100 / total).toFixed(2) + '%)</span>，'
       }
       if (i > 0) {
-        itemStr += '<span class="describe-redText">' + item.name + item.value + '(' + (item.value * 100 / total).toFixed(2) + '%)' + '</span>，'
+        itemStr += '<span class="describe-redText">' + item.name + '</span>情感数据有<span class="describe-redText">' +
+          item.value + '</span>条,所占比例为<span class="describe-redText">(' + (item.value * 100 / total).toFixed(2) + '%)' + '</span>，'
       }
     })
-
     itemStr = itemStr.substring(0, itemStr.length - 1)
 
-    description = '<div class="describe-text">根据互联网抓取的数据，对数据情感进行分析，' + itemStr + '。</div>'
+    description = '<div class="describe-text">根据互联网抓取的数据，对相关数据情感进行分析，' + itemStr + '。</div>'
   } else {
     description = '暂无相关数据'
   }
@@ -563,10 +742,10 @@ exports.getMediaBarChart = function (report) {
     type: ['news']
   }
 
-  data = articleServer.getFilterAndGroupBy(params)
+  data = articleService.getFilterAndGroupBy(params)
   logger.info('getMediaBarChart data \n', data)
-  var renderDataTemp = []
-  var chartConfig = {
+  let renderDataTemp = []
+  let chartConfig = {
     labelLength: 8,
     legendData: {
       show: false
@@ -595,26 +774,26 @@ exports.getMediaBarChart = function (report) {
       }
     }
   }
-  var renderItem = {
+  let renderItem = {
     name: '媒体名称',
     data: []
   }
   jQuery.each(data, function (i, item) {
-    var node = {}
+    let node = {}
     node.name = item.key
     node.value = item.value
     renderItem.data.push(node)
   })
   renderDataTemp.push(renderItem)
-  var option = barChart.getOption(renderDataTemp, chartConfig)
+  let option = barChart.getOption(renderDataTemp, chartConfig)
   // 将对象转为json格式，在此处设置labelLength, option为json
   option = utils.replaceLabelLength(option, 8)
 
   if (data.length > 0) {
-    var itemStr = ''
-    data.forEach(function (item, i) {
+    let itemStr = ''
+    jQuery.each(data, function (i, item) {
       if (i < 4) {
-        itemStr += '<span class="describe-redText">' + item.key + '(' + item.value + ')' + '</span>、'
+        itemStr += '<span class="describe-redText">' + item.key + '</span>共有相关数据<span class="describe-redText">(' + item.value + ')条</span>、'
       }
     })
 
@@ -657,7 +836,7 @@ exports.getHotAuthorChart = function (report) {
     type: ['weibo', 'bbs', 'bar']
   }
 
-  data = articleServer.getFilterAndGroupBy(params)
+  data = articleService.getFilterAndGroupBy(params)
   logger.info('getMediaBarChart data \n', data)
   let renderDataTemp = []
   let chartConfig = {
@@ -704,16 +883,15 @@ exports.getHotAuthorChart = function (report) {
   option = utils.replaceLabelLength(option, 8)
 
   if (data.length > 0) {
-    var itemStr = ''
-    data.forEach(function (item, i) {
+    let itemStr = ''
+    jQuery.each(data, function (i, item) {
       if (i < 5) {
-        itemStr += '<span class="describe-redText">' + item.key + '(' + item.value + ')' + '</span>、'
+        itemStr += '<span class="describe-redText">' + item.key + '</span>发表观点有<span class="describe-redText">(' + item.value + ')条</span>、'
       }
     })
-
-    var length = data.length > 5 ? 5 : data.length
+    let length = data.length > 5 ? 5 : data.length
     itemStr = itemStr.substring(0, itemStr.length - 1)
-    description = '<div class="describe-text">对该主题的监测过程中，在论坛的参与话题讨论的网民中，讨论最为激烈的前<span class="describe-redText">' + length + '</span>名网民分别为' + itemStr + '。</div>'
+    description = '<div class="describe-text">对该主题的监测过程中，在微博、论坛、贴吧等自媒体参与话题讨论的网民中，讨论最为激烈的前<span class="describe-redText">' + length + '</span>名网民分别为' + itemStr + '。</div>'
   } else {
     description = '暂无相关数据'
   }
@@ -722,7 +900,6 @@ exports.getHotAuthorChart = function (report) {
 
   return renderData
 }
-
 /**
  * 微博关注人群地域分布图
  * @param report
@@ -749,8 +926,8 @@ exports.getFocusPeopleMapChart = function (report) {
     type: ['weibo']
   }
 
-  data = articleServer.getFilterAndGroupBy(params)
-  logger.info('getMediaBarChart data \n', data)
+  data = articleService.getFilterAndGroupBy(params)
+  logger.info('getFocusPeopleMapChart data \n', data)
   let renderDataTemp = []
   let chartConfig = {
     legendData: {
@@ -791,9 +968,7 @@ exports.getFocusPeopleMapChart = function (report) {
     renderItem.data.push(node)
   })
   renderDataTemp.push(renderItem)
-  let option = barChart.getOption(renderDataTemp, chartConfig)
-  // 将对象转为json格式，在此处设置labelLength, option为json
-  option = utils.replaceLabelLength(option, 8)
+  let option = mapChart.getOption(renderDataTemp, chartConfig)
 
   var maxCount = 10,
     seriesData = []
@@ -857,7 +1032,6 @@ exports.getFocusPeopleMapChart = function (report) {
 
   return renderData
 }
-
 /**
  * 热点词词云分析
  * @param report
@@ -885,7 +1059,7 @@ exports.getKeywordsChart = function (report) {
     },
     type: ['article']
   }
-  data = articleServer.hotWords(params)
+  data = articleService.hotWords(params)
   logger.info('getArticleHotKeywordsChart data \n', data)
   let keywords = []
   jQuery.each(data, function (i, item) {
@@ -899,13 +1073,12 @@ exports.getKeywordsChart = function (report) {
   }
 
   if (data.length > 0) {
-    var itemStr = ''
-    data.forEach(function (item, i) {
+    let itemStr = ''
+    jQuery.each(data, function (i, item) {
       if (i < 5) {
-        itemStr += '<span class="describe-redText">' + item.key + '(' + item.value + ')' + '</span>、'
+        itemStr += '<span class="describe-redText">' + item.key + '</span>出现<span class="describe-redText">(' + item.value + ')次</span>、'
       }
     })
-
     itemStr = itemStr.substring(0, itemStr.length - 1)
 
     description = '<div class="describe-text">根据互联网抓取的数据，热点关键词词频较高的是' + itemStr + '等。</div>'
@@ -923,7 +1096,9 @@ exports.getKeywordsChart = function (report) {
  * @return renderData
  */
 exports.getSpecialRecommendArticles = function (report) {
-  var titleMust = ''
+  let {
+    titleMust = '', data, description = '', renderData = {}
+  } = {}
   if (report.mode === 'NORMAL') {
     if (report.mustWord && report.mustWord !== '') {
       titleMust = report.mustWord.split('@')[0]
@@ -939,18 +1114,11 @@ exports.getSpecialRecommendArticles = function (report) {
     }
   }
 
-  let {
-    data,
-    description = '',
-    renderData = {}
-  } = {}
-
   let params = {
     date: {
       startDate: report.startDate,
       endDate: report.endDate
     },
-    filed: '',
     keyword: {
       mustWord: report.mustWord,
       mustNotWord: report.mustNotWord,
@@ -967,16 +1135,15 @@ exports.getSpecialRecommendArticles = function (report) {
     }],
     type: ['news']
   }
-
-  data = articleServer.titleTimeAxis(params)
+  data = articleService.titleTimeAxis(params)
   logger.info('getSpecialRecommendArticles data \n', data)
 
   data = data.content
   let option = {}
   if (data.length > 0) {
     // make description
-    var itemStr = ''
-    data.forEach(function (article, i) {
+    let itemStr = ''
+    jQuery.each(data, function (i, article) {
       if (i < 4) {
         if (article.title.length > 30) {
           article.title = article.title.substring(0, 30) + '...'
