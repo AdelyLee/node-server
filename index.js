@@ -43,7 +43,7 @@ app.get('/briefingJson', function (req, res) {
     logger.info('The file has been saved!')
   })
 
-  res.end(JSON.stringify(briefingJson))
+  res.end(briefingJson)
 })
 
 app.get('/briefingJson.json', function (req, res) {
