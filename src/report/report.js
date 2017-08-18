@@ -1061,23 +1061,8 @@ exports.getKeywordsChart = function (report) {
  */
 exports.getSpecialRecommendArticles = function (report) {
   let {
-    titleMust = '', data, description = '', renderData = {}
+    description = '', data, renderData = {}
   } = {}
-  if (report.mode === 'NORMAL') {
-    if (report.mustWord && report.mustWord !== '') {
-      titleMust = report.mustWord.split('@')[0]
-    } else {
-      titleMust = report.shouldWord.split('@')[0]
-    }
-  } else if (report.mode === 'ADVANCED') {
-    // TODO: 需要与后台确认高级模式时如何处理
-    if (report.mustWord && report.mustWord !== '') {
-      titleMust = report.mustWord.split('@')[0]
-    } else {
-      titleMust = report.shouldWord.split('@')[0]
-    }
-  }
-
   let params = {
     date: {
       startDate: report.startDate,
