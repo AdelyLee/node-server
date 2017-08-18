@@ -5,7 +5,7 @@ var jQuery = require('../utils/jqueryUtil')
 const {
   legendLabelColor
 } = {
-  legendLabelColor: '#fff'
+  legendLabelColor: '#333'
 }
 /**
  * get pie chart option by the data and chartConfig.

@@ -26,8 +26,8 @@ let reportParam1 = {
 
 // monthlyService.getReportSummarize(reportParam1)
 // monthlyService.getArticleTypeChart(reportParam1)
-// monthlyService.getArticleTrendChart(reportParam1)
-monthlyService.getArticleHotPointChart(reportParam1)
+monthlyService.getArticleTrendChart(reportParam1)
+// monthlyService.getArticleHotPointChart(reportParam1)
 // monthlyService.getNewsEmotionPieChart(reportParam1)
 // monthlyService.getFocusPeopleMapChart(reportParam1)
 

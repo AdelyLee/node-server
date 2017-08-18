@@ -4,11 +4,11 @@
  */
 var jQuery = require('../utils/jqueryUtil')
 const { categoryAxisLabelColor, valueAxisLabelColor, legendLabelColor, categoryAxisLineColor, valueAxisLineColor } = {
-  categoryAxisLabelColor: '#fff',
-  categoryAxisLineColor: '#fff',
-  valueAxisLabelColor: '#fff',
-  valueAxisLineColor: '#fff',
-  legendLabelColor: '#fff'
+  categoryAxisLabelColor: '#333',
+  categoryAxisLineColor: '#333',
+  valueAxisLabelColor: '#333',
+  valueAxisLineColor: '#333',
+  legendLabelColor: '#333'
 }
 /**
  * get line chart option by the data and chartConfig.

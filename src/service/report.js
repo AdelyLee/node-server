@@ -10,9 +10,11 @@ const logger = log4js.getLogger('report')
 /**
  * 用户登录接口 GET /briefing/detail/type
  * @param params
-*/
+ */
 exports.getReport = (params) => {
-  let { isReturn = false, renderData } = {}
+  let {
+    isReturn = false, renderData
+  } = {}
   request({
     url: `${base}/briefing/detail/type?` + qs.stringify(params),
     method: 'get',
@@ -56,12 +58,16 @@ exports.getReportParam = function (reportParam) {
   param.shouldWord = reportParam.shouldWord
   param.mustWord = reportParam.mustWord
   param.mustNotWord = reportParam.mustNotWord
-  param.mode = reportParam.mode
+  if (reportParam.mode) {
+    param.mode = reportParam.mode
+  } else {
+    param.mode = 'NORMAL'
+  }
 
   if (reportParam.type === 'MONTHLY') {
-    param.trendStartData = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(reportParam.startTime)), 'M', -1), 'yyyy-MM-dd')
+    param.trendStartDate = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(reportParam.startTime)), 'M', -1), 'yyyy-MM-dd')
   } else if (reportParam.type === 'WEEKLY') {
-    param.trendStartData = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(reportParam.startTime)), 'd', -7), 'yyyy-MM-dd')
+    param.trendStartDate = dateUtil.formatDate(dateUtil.addDate(new Date(parseFloat(reportParam.startTime)), 'd', -7), 'yyyy-MM-dd')
   }
 
   logger.info('getReportParam success: \n', param)

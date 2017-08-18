@@ -78,7 +78,6 @@ function mikeBriefing(briefingObj) {
 }
 
 function mikeBriefingCell(briefingCellObj) {
-  debugger
   // 获取数据
   var renderData = {}
   var method = briefingCellObj.method
